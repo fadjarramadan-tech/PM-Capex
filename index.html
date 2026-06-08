@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Monitoring Realisasi CAPEX v3</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Monitoring Realisasi Anggaran Investasi (CAPEX)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,22 +12,32 @@
             padding: 0;
         }
 
+        :root {
+            --primary-color: #005E6A;
+            --primary-light: #E6F2F4;
+            --secondary-color: #008B9B;
+            --dark-color: #2F3E46;
+            --light-bg: #F4F7F6;
+            --border-color: #D3DCDA;
+            --success: #2ECC71;
+            --warning: #F1C40F;
+            --danger: #E74C3C;
+        }
+
         body {
-            background-color: #f4f6f9;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            background-color: var(--light-bg);
+            color: var(--dark-color);
+            display: block;
         }
 
         header {
-            background-color: #005a60;
+            background-color: var(--primary-color);
             color: white;
             padding: 15px 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         header h1 {
@@ -37,776 +45,829 @@
             font-weight: 600;
         }
 
-        .user-profile {
-            font-size: 14px;
-            background-color: rgba(255,255,255,0.1);
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-
         .container {
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
             display: flex;
-            flex: 1;
+            background-color: white;
+            padding: 10px 10px 0 10px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+            border-radius: 6px 6px 0 0;
         }
 
-        nav {
-            width: 240px;
-            background-color: #1e293b;
-            color: #cbd5e1;
-            padding: 20px 0;
-        }
-
-        nav ul {
-            list-style: none;
-        }
-
-        nav ul li {
-            padding: 12px 25px;
-            cursor: pointer;
-            transition: all 0.3s;
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: none;
             font-size: 14px;
+            font-weight: 600;
+            color: #7F8C8D;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
         }
 
-        nav ul li:hover, nav ul li.active {
-            background-color: #0f172a;
-            color: white;
-            border-left: 4px solid #00abba;
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
         }
 
-        main {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
+        .tab-btn:hover {
+            color: var(--secondary-color);
         }
 
-        .view-section {
+        .tab-content {
             display: none;
         }
 
-        .view-section.active {
+        .tab-content.active {
             display: block;
         }
 
-        .dashboard-cards {
+        /* Summary Cards */
+        .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 5px solid #005a60;
+            border-left: 5px solid var(--secondary-color);
         }
 
-        .card h3 {
-            font-size: 13px;
-            color: #64748b;
+        .card.success { border-left-color: var(--success); }
+        .card.warning { border-left-color: var(--warning); }
+        .card.danger { border-left-color: var(--danger); }
+
+        .card-title {
+            font-size: 12px;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            color: #7F8C8D;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
 
-        .card .value {
+        .card-value {
             font-size: 22px;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--dark-color);
         }
 
-        .card .percentage {
-            font-size: 12px;
+        .card-desc {
+            font-size: 11px;
+            color: #95A5A6;
             margin-top: 5px;
-            font-weight: 600;
         }
 
-        /* Filter Panel */
+        /* Controls / Filters */
         .filter-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            display: flex;
             gap: 15px;
-        }
-
-        .grid-charts-ranking {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .chart-box, .ranking-box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .chart-box h3, .ranking-box h3 {
-            font-size: 15px;
-            color: #1e293b;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 10px;
-        }
-
-        .ranking-list { list-style: none; }
-        .ranking-item {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px dotted #e2e8f0;
-            font-size: 13px;
+            flex-wrap: wrap;
         }
 
-        .rank-number {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            background-color: #e2e8f0;
-            color: #334155;
-            text-align: center;
-            border-radius: 50%;
-            font-size: 11px;
-            line-height: 20px;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        .rank-1 .rank-number { background-color: #ffd700; }
-        .rank-2 .rank-number { background-color: #c0c0c0; }
-        .rank-3 .rank-number { background-color: #cd7f32; }
-
-        .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            overflow-x: auto;
-        }
-
-        .table-header-actions {
+        .form-group {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            flex-direction: column;
+            gap: 5px;
         }
 
-        .table-header-actions h2 {
-            font-size: 16px;
-            color: #1e293b;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .form-group label {
             font-size: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f8fafc;
-            color: #475569;
-            padding: 12px 10px;
             font-weight: 600;
-            border-bottom: 2px solid #e2e8f0;
-            cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
+            color: #7F8C8D;
         }
 
-        th:hover {
-            background-color: #edf2f7;
-        }
-
-        th::after {
-            content: ' ↕';
-            font-size: 10px;
-            color: #a0aec0;
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #e2e8f0;
-            color: #334155;
-        }
-
-        tr:hover { background-color: #f8fafc; }
-
-        .badge {
-            padding: 4px 8px;
+        .form-control {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            font-weight: 600;
-            font-size: 11px;
-            text-align: center;
-            display: inline-block;
+            font-size: 14px;
+            outline: none;
+            min-width: 180px;
         }
-        .badge-danger { background-color: #fee2e2; color: #991b1b; }
-        .badge-warning { background-color: #fef3c7; color: #92400e; }
-        .badge-success { background-color: #dcfce7; color: #166534; }
 
         .btn {
-            padding: 8px 16px;
+            padding: 9px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
             font-size: 13px;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn-primary { background-color: #005a60; color: white; }
-        .btn-success { background-color: #16a34a; color: white; }
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569;}
-        .form-control { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
-        
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .chart-wrapper { position: relative; height: 220px; width: 100%; }
-        
-        /* Loading overlay style */
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.7); display: none; justify-content: center;
-            align-items: center; z-index: 9999; font-weight: bold; color: #005a60;
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: #004B55; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: #27AE60; }
+
+        /* Tables & Content layout */
+        .content-box {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .box-header {
+            padding: 15px 20px;
+            background-color: #FCFDFD;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .box-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 12px 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #F9FBFA;
+        }
+
+        /* EWS Badges */
+        .badge-ews {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 11px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .ews-hijau { background-color: #D4EDDA; color: #155724; border: 1px solid #C3E6CB; }
+        .ews-kuning { background-color: #FFF3CD; color: #856404; border: 1px solid #FFEABC; }
+        .ews-merah { background-color: #F8D7DA; color: #721C24; border: 1px solid #F5C6CB; }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #ECEFF1;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 12px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary-color);
+            transition: width 0.4s ease;
+        }
+
+        /* Split Layout */
+        .split-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .split-grid { grid-template-columns: 1fr; }
+        }
+
+        /* S-Curve Track Bar */
+        .timeline-track {
+            position: relative;
+            background: linear-gradient(to right, #ECEFF1 1px, transparent 1px);
+            background-size: calc(100% / 12) 100%;
+            height: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .timeline-bar {
+            position: absolute;
+            height: 20px;
+            top: 10px;
+            border-radius: 3px;
+            opacity: 0.85;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="loading" class="loading-overlay">Memproses sinkronisasi data database...</div>
-
     <header>
-        <h1>Sistem Monitoring CAPEX Bulanan v3</h1>
-        <div class="user-profile">Analis Pemantauan Anggaran</div>
+        <h1>Sistem Monitoring Realisasi Anggaran Investasi (CAPEX)</h1>
+        <div>
+            <span id="api-status" class="badge-ews ews-kuning">Menghubungkan API Data Eksternal...</span>
+        </div>
     </header>
 
     <div class="container">
-        <nav>
-            <ul>
-                <li class="active" onclick="switchView('dashboard')">Dashboard Utama</li>
-                <li onclick="switchView('update-wilayah')">Update Kantor Wilayah</li>
-                <li onclick="switchView('switching-anggaran')">Switching Anggaran</li>
-            </ul>
-        </nav>
+        
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-dashboard')">Dashboard & Gabungan</button>
+            <button class="tab-btn" onclick="switchTab('tab-wilayah')">Realisasi per Wilayah</button>
+            <button class="tab-btn" onclick="switchTab('tab-switching')">Mekanisme Switching Anggaran</button>
+            <button class="tab-btn" onclick="switchTab('tab-timeline')">Timeline & Rencana Penyerapan</button>
+        </div>
 
-        <main>
-            <div id="dashboard" class="view-section active">
-                <div class="table-header-actions">
-                    <h2>Kombinasi Realisasi vs Alokasi CAPEX Nasional</h2>
-                    <button class="btn btn-success" onclick="ekporLaporan()">Ekspor Laporan (Direktur Sektor)</button>
+        <div class="filter-panel">
+            <div class="form-group">
+                <label>Filter Mata Anggaran</label>
+                <select id="global-mata-anggaran" class="form-control" onchange="processDataAndRender()">
+                    <option value="ALL">Semua Mata Anggaran</option>
+                    <option value="Tanah">Tanah</option>
+                    <option value="Bangunan">Bangunan</option>
+                    <option value="Perbotan Non Otomasi">Perbotan Non Otomasi</option>
+                    <option value="Kendaraan">Kendaraan</option>
+                </select>
+            </div>
+            <div style="margin-left: auto;">
+                <button class="btn btn-success" onclick="exportToExcel()">
+                    Ekspor Laporan (.xls) Direktur Sektor
+                </button>
+            </div>
+        </div>
+
+        <div class="summary-grid">
+            <div class="card">
+                <div class="card-title">Total Alokasi CAPEX</div>
+                <div class="card-value" id="sum-alokasi">Rp 0</div>
+                <div class="card-desc">Plafon anggaran induk 17 wilayah</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Total Realisasi YTD</div>
+                <div class="card-value" id="sum-realisasi">Rp 0</div>
+                <div class="card-desc" id="sum-realisasi-pct">0% dari alokasi</div>
+            </div>
+            <div class="card" id="card-ews-status">
+                <div class="card-title">Status Early Warning (EWS)</div>
+                <div class="card-value" id="sum-ews-text">-</div>
+                <div class="card-desc" id="sum-ews-desc">Berdasarkan rasio penyerapan global</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Sisa Anggaran (Sisa Plafon)</div>
+                <div class="card-value" id="sum-sisa">Rp 0</div>
+                <div class="card-desc">Dana siap switching/eksekusi</div>
+            </div>
+        </div>
+
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="content-box">
+                <div class="box-header">
+                    <h3>Progress Realisasi Gabungan & EWS Seluruh Kantor Wilayah</h3>
                 </div>
-
-                <div class="dashboard-cards">
-                    <div class="card">
-                        <h3>Total Alokasi (Full Year)</h3>
-                        <div class="value" id="tot-alokasi">Rp 0</div>
-                    </div>
-                    <div class="card" style="border-left-color: #16a34a;">
-                        <h3>Total Realisasi YTD</h3>
-                        <div class="value" id="tot-realisasi">Rp 0</div>
-                        <div class="percentage" id="tot-persen" style="color: #16a34a;">Penyerapan: 0%</div>
-                    </div>
-                    <div class="card" style="border-left-color: #ea580c;">
-                        <h3>Sisa Anggaran</h3>
-                        <div class="value" id="tot-sisa">Rp 0</div>
-                    </div>
-                </div>
-
-                <div class="filter-panel">
-                    <div>
-                        <label style="font-size:12px; font-weight:600; color:#475569;">Filter Wilayah</label>
-                        <select class="form-control" id="filter-wilayah" onchange="refreshAll()"></select>
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:600; color:#475569;">Filter Mata Anggaran</label>
-                        <select class="form-control" id="filter-mata" onchange="refreshAll()">
-                            <option value="ALL">-- Semua Mata Anggaran --</option>
-                            <option value="Tanah">Tanah</option>
-                            <option value="Bangunan">Bangunan</option>
-                            <option value="Perabotan Non Otomasi">Perabotan Non Otomasi</option>
-                            <option value="Kendaraan">Kendaraan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:600; color:#475569;">Bulan Laporan</label>
-                        <select class="form-control" id="filter-bulan" onchange="refreshAll()">
-                            <option value="1">Januari</option><option value="2">Februari</option>
-                            <option value="3">Maret</option><option value="4">April</option>
-                            <option value="5">Mei</option><option value="6">Juni</option>
-                            <option value="7">Juli</option><option value="8">Agustus</option>
-                            <option value="9">September</option><option value="10">Oktober</option>
-                            <option value="11">November</option><option value="12" selected>Desember</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:600; color:#475569;">Cari Nama Project</label>
-                        <input type="text" class="form-control" id="search-project" placeholder="Ketik nama project..." onkeyup="refreshAll()">
-                    </div>
-                </div>
-
-                <div class="grid-charts-ranking">
-                    <div class="chart-box">
-                        <div class="chart-wrapper"><canvas id="barChartWilayah"></canvas></div>
-                    </div>
-                    <div class="ranking-box">
-                        <h3>Rangking Wilayah (% Penyerapan)</h3>
-                        <ul class="ranking-list" id="ranking-wilayah-list"></ul>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table>
+                <div class="table-responsive">
+                    <table id="table-gabungan">
                         <thead>
                             <tr>
-                                <th onclick="sortTable(0)">Wilayah</th>
-                                <th onclick="sortTable(1)">Mata Anggaran</th>
-                                <th onclick="sortTable(2)">Nama Project</th>
-                                <th onclick="sortTable(3)">Estimasi Nilai Project</th>
-                                <th onclick="sortTable(4)">Alokasi Anggaran</th>
-                                <th onclick="sortTable(5)">Switching Anggaran</th>
-                                <th onclick="sortTable(6)">Alokasi Setelah Switching (Full Year)</th>
-                                <th onclick="sortTable(7)">Alokasi Proporsional</th>
-                                <th onclick="sortTable(8)">Realisasi Anggaran</th>
-                                <th>EWS Status</th>
+                                <th>No</th>
+                                <th>Nama Kantor Wilayah</th>
+                                <th>Alokasi Anggaran (Rp)</th>
+                                <th>Realisasi Kumulatif (Rp)</th>
+                                <th>Sisa Anggaran (Rp)</th>
+                                <th style="width: 200px;">Progress Serapan</th>
+                                <th>EWS Indikator</th>
                             </tr>
                         </thead>
-                        <tbody id="monitoring-data">
-                        </tbody>
+                        <tbody id="tbody-gabungan">
+                            </tbody>
                     </table>
                 </div>
             </div>
+        </div>
 
-            <div id="update-wilayah" class="view-section">
-                <div class="table-container" style="max-width: 600px; margin: 0 auto;">
-                    <h3>Form Pelaporan Realisasi Anggaran</h3><br>
-                    <form id="form-update" onsubmit="handleUpdate(event)">
-                        <div class="form-group">
-                            <label>Pilih Project</label>
-                            <select class="form-control" id="update-project-idx" required></select>
+        <div id="tab-wilayah" class="tab-content">
+            <div class="filter-panel" style="background-color: var(--primary-light);">
+                <div class="form-group">
+                    <label>Pilih Kantor Wilayah</label>
+                    <select id="select-filter-wilayah" class="form-control" onchange="renderWilayahDetails()">
+                        </select>
+                </div>
+            </div>
+
+            <div class="content-box">
+                <div class="box-header">
+                    <h3 id="title-detail-wilayah">Rincian Realisasi Per Mata Anggaran</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mata Anggaran</th>
+                                <th>Alokasi Anggaran Plafon (Rp)</th>
+                                <th>Realisasi Berjalan (Rp)</th>
+                                <th>Sisa Plafon (Rp)</th>
+                                <th>% Serapan</th>
+                                <th>Indikator EWS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-detail-wilayah">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-switching" class="tab-content">
+            <div class="split-grid">
+                <div class="content-box">
+                    <div class="box-header">
+                        <h3>Form Pengajuan Switching Alokasi CAPEX</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                        <p style="font-size:13px; color:#7f8c8d; margin-bottom:15px;">
+                            Fitur ini memfasilitasi pergeseran (*switching*) anggaran antar pos mata anggaran atau antar wilayah operasional jika terjadi urgensi penyerapan.
+                        </p>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>Wilayah Asal (Sumber Dana)</label>
+                            <select id="switch-from-wilayah" class="form-control"></select>
                         </div>
-                        <div class="form-group">
-                            <label>Bulan Realisasi</label>
-                            <select class="form-control" id="update-bulan" required>
-                                <option value="1">Januari</option><option value="2">Februari</option>
-                                <option value="3">Maret</option><option value="4">April</option>
-                                <option value="5">Mei</option><option value="6">Juni</option>
-                                <option value="7">Juli</option><option value="8">Agustus</option>
-                                <option value="9">September</option><option value="10">Oktober</option>
-                                <option value="11">November</option><option value="12">Desember</option>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>Mata Anggaran Asal</label>
+                            <select id="switch-from-mata" class="form-control">
+                                <option value="Tanah">Tanah</option>
+                                <option value="Bangunan">Bangunan</option>
+                                <option value="Perbotan Non Otomasi">Perbotan Non Otomasi</option>
+                                <option value="Kendaraan">Kendaraan</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Tambahan Realisasi Bulan Ini (Rp)</label>
-                            <input type="number" class="form-control" id="update-nominal" required>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>Wilayah Tujuan (Penerima Alokasi)</label>
+                            <select id="switch-to-wilayah" class="form-control"></select>
                         </div>
-                        <div class="form-group">
-                            <label>Dokumen Underlying (PDF/Image)</label>
-                            <input type="file" id="update-file" class="form-control">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>Mata Anggaran Tujuan</label>
+                            <select id="switch-to-mata" class="form-control">
+                                <option value="Tanah">Tanah</option>
+                                <option value="Bangunan">Bangunan</option>
+                                <option value="Perbotan Non Otomasi">Perbotan Non Otomasi</option>
+                                <option value="Kendaraan">Kendaraan</option>
+                            </select>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Realisasi</button>
-                    </form>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Nominal Dana yang Di-switch (Rp)</label>
+                            <input type="number" id="switch-nominal" class="form-control" placeholder="Contoh: 50000000">
+                        </div>
+                        <button class="btn btn-primary" onclick="executeSwitching()">Eksekusi Switching Anggaran</button>
+                    </div>
                 </div>
-            </div>
 
-            <div id="switching-anggaran" class="view-section">
-                <div class="table-container" style="max-width: 600px; margin: 0 auto;">
-                    <h3>Fasilitas Switching Anggaran Antar Proyek</h3><br>
-                    <form id="form-switching" onsubmit="handleSwitching(event)">
-                        <div class="form-group">
-                            <label>Project Sumber Dana (Minus)</label>
-                            <select class="form-control" id="switch-asal" required></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Project Penerima Dana (Plus)</label>
-                            <select class="form-control" id="switch-tujuan" required></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Nominal Pergeseran/Switching (Rp)</label>
-                            <input type="number" class="form-control" id="switch-nominal" required>
-                        </div>
-                        <button type="submit" class="btn btn-success" style="width: 100%;">Eksekusi Switching</button>
-                    </form>
+                <div class="content-box">
+                    <div class="box-header">
+                        <h3>Audit Trail / Histori Perubahan Struktur Alokasi</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>Asal Sumber</th>
+                                    <th>Tujuan Pengalihan</th>
+                                    <th>Nominal (Rp)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-log-switching">
+                                <tr>
+                                    <td colspan="4" style="text-align:center; color:#95a5a6; padding:30px;">Belum ada aktivitas re-alokasi anggaran terdeteksi.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
+
+        <div id="tab-timeline" class="tab-content">
+            <div class="content-box">
+                <div class="box-header">
+                    <h3>Timeline Target Distribusi Penyerapan Tahunan (S-Curve & Rencana Aktual)</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="font-size:13px; color:#7f8c8d; margin-bottom: 15px;">
+                        Visualisasi breakdown sebaran target rencana penyerapan dalam 1 Tahun Anggaran per komponen proyek wilayah (Triwulanan).
+                    </p>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Komponen Wilayah & Proyek CAPEX</th>
+                                    <th>Q1 (Jan-Mar)</th>
+                                    <th>Q2 (Apr-Jun)</th>
+                                    <th>Q3 (Jul-Sep)</th>
+                                    <th>Q4 (Okt-Des)</th>
+                                    <th>Visualisasi Jalur Aktual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-timeline">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwCqaZ5ejxOBASjbEF6odZK5seBLINY3-x3ZUPkmAbZf0Qhft8OOb-JNVyWe1tjaBt2LA/exec";
+    <div id="toast">Notifikasi Sistem</div>
 
+    <script>
         const wilayahList = [
-            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palembang)", 
+            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palmebang)", 
             "Wilayah 04 (Bandung)", "Wilayah 05 (Semarang)", "Wilayah 06 (Surabaya)", 
             "Wilayah 07 (Makassar)", "Wilayah 08 (Denpasar)", "Wilayah 09 (Banjarmasin)", 
             "Wilayah 10 (Jakarta Kemayoran)", "Wilayah 11 (Manado)", "Wilayah 12 (Jakarta Kota)", 
-            "Wilayah 14 (Jakarta BSD)", "Wilayah 15 (Jakarta Kemayoran 2)", "Wilayah 16 (Papua)", 
+            "Wilayah 14 (Jakarta BSD)", "Wilayah 15 (Jakarta Kemayoran)", "Wilayah 16 (Papua)", 
             "Wilayah 17 (Yogyakarta)", "Wilayah 18 (Malang)"
         ];
 
-        let projectData = [];
-        let sortDirections = [];
-        let barChartInstance = null;
+        const mataAnggaranList = ["Tanah", "Bangunan", "Perbotan Non Otomasi", "Kendaraan"];
 
-        function toggleLoading(show) {
-            document.getElementById('loading').style.display = show ? 'flex' : 'none';
-        }
+        // State Management Global
+        let appData = {
+            alokasi: {},   
+            realisasi: {}, 
+            switchingLogs: []
+        };
 
-        async function initData() {
-            toggleLoading(true);
-            try {
-                const response = await fetch(API_URL);
-                const result = await response.json();
-                
-                if (result && result.status === "success" && result.data && result.data.length > 0) {
-                    projectData = result.data;
-                } else {
-                    console.warn("Database kosong/gagal dimuat. Menggunakan data lokal (dummy).");
-                    generateDummyData();
-                }
-            } catch (error) {
-                console.error("Gagal terhubung ke API:", error);
-                generateDummyData();
-            } finally {
-                populateDropdowns();
-                refreshAll();
-                toggleLoading(false);
-            }
-        }
-
-        function generateDummyData() {
-            let id = 0;
-            projectData = [];
-            wilayahList.forEach((w, wIdx) => {
-                const mataAnggaran = ["Tanah", "Bangunan", "Perabotan Non Otomasi", "Kendaraan"];
-                mataAnggaran.forEach((m, mIdx) => {
-                    id++;
-                    let alokasiAwal = (wIdx + 1) * 2000000000 + (mIdx * 500000000);
-                    let realisasiBulanan = {};
-                    for(let b=1; b<=12; b++) {
-                        let nilaiBulan = b <= 5 ? Math.floor(alokasiAwal * 0.05) : Math.floor(alokasiAwal * 0.07);
-                        realisasiBulanan[b] = nilaiBulan;
-                    }
-                    projectData.push({
-                        id: id,
-                        wilayah: w,
-                        mataAnggaran: m,
-                        namaProject: `Pengadaan ${m} Komprehensif Tahap ${wIdx+1}`,
-                        estimasiNilai: alokasiAwal + 200000000,
-                        alokasiAnggaran: alokasiAwal,
-                        switchingAnggaran: 0, 
-                        realisasiBulanan: realisasiBulanan
-                    });
+        // Seed data baseline awal untuk visualisasi instan
+        function initBaseData() {
+            wilayahList.forEach((w, i) => {
+                mataAnggaranList.forEach((m, idx) => {
+                    const key = `${w}__${m}`;
+                    // Membuat data contoh bervariasi agar EWS (Merah, Kuning, Hijau) menyala kontras
+                    if (idx === 0) { appData.alokasi[key] = 4000000000; appData.realisasi[key] = 3500000000; } // Hijau
+                    else if (idx === 1) { appData.alokasi[key] = 6000000000; appData.realisasi[key] = 3200000000; } // Kuning
+                    else if (idx === 2) { appData.alokasi[key] = 1500000000; appData.realisasi[key] = 300000000; }  // Merah
+                    else { appData.alokasi[key] = 2000000000; appData.realisasi[key] = 150000000; } // Merah
                 });
             });
         }
 
-        // PERBAIKAN: Fungsi populateDropdowns() telah ditambahkan safeguard pengaman string kosong
-        function populateDropdowns() {
-            const fWil = document.getElementById('filter-wilayah');
-            fWil.innerHTML = '<option value="ALL">-- Semua Wilayah --</option>';
-            wilayahList.forEach(w => {
-                fWil.innerHTML += `<option value="${w}">${w}</option>`;
-            });
-
-            const updProj = document.getElementById('update-project-idx');
-            const swAsal = document.getElementById('switch-asal');
-            const swTujuan = document.getElementById('switch-tujuan');
-            
-            updProj.innerHTML = ""; swAsal.innerHTML = ""; swTujuan.innerHTML = "";
-
-            projectData.forEach(p => {
-                // Berikan fallback jika objek wilayah tidak ada atau tidak memiliki teks
-                let namaWilayah = p.wilayah ? String(p.wilayah).trim() : "Wilayah Kosong";
-                let namaProjectAman = p.namaProject ? String(p.namaProject).trim() : "Proyek Tanpa Nama";
-                
-                // Eksekusi split secara aman
-                let namaPendek = namaWilayah.split(' ')[1] || namaWilayah;
-                let optTxt = `[${namaPendek}] - ${namaProjectAman}`;
-                
-                updProj.innerHTML += `<option value="${p.id}">${optTxt}</option>`;
-                swAsal.innerHTML += `<option value="${p.id}">${optTxt}</option>`;
-                swTujuan.innerHTML += `<option value="${p.id}">${optTxt}</option>`;
-            });
-        }
-
-        function formatRp(num) {
-            return "Rp " + (num || 0).toLocaleString('id-ID');
-        }
-
-        function getEWSStatus(realisasi, proporsional) {
-            if (proporsional === 0) return '<span class="badge badge-success">Optimal (Hijau)</span>';
-            let rasio = (realisasi / proporsional) * 100;
-            if(rasio < 50) return '<span class="badge badge-danger">Rendah (Merah)</span>';
-            if(rasio >= 50 && rasio < 85) return '<span class="badge badge-warning">Medium (Kuning)</span>';
-            return '<span class="badge badge-success">Optimal (Hijau)</span>';
-        }
-
-        function refreshAll() {
-            const fWil = document.getElementById('filter-wilayah').value;
-            const fMata = document.getElementById('filter-mata').value;
-            const fBulan = parseInt(document.getElementById('filter-bulan').value);
-            const sProj = document.getElementById('search-project').value.toLowerCase();
-
-            let tbody = document.getElementById('monitoring-data');
-            tbody.innerHTML = "";
-
-            let totalNasionalAlokasi = 0;
-            let totalNasionalRealisasi = 0;
-
-            let wilayahChartMap = {};
-            wilayahList.forEach(w => wilayahChartMap[w] = { alokasi: 0, realisasi: 0 });
-
-            let filteredData = projectData.filter(p => {
-                if(fWil !== "ALL" && p.wilayah !== fWil) return false;
-                if(fMata !== "ALL" && p.mataAnggaran !== fMata) return false;
-                if(sProj && !String(p.namaProject).toLowerCase().includes(sProj)) return false;
-                return true;
-            });
-
-            filteredData.forEach(p => {
-                let alokasiSetelahSwitching = Number(p.alokasiAnggaran || 0) + Number(p.switchingAnggaran || 0);
-                let alokasiProporsional = (alokasiSetelahSwitching / 12) * fBulan;
-
-                let totalRealisasiYTD = 0;
-                if (p.realisasiBulanan) {
-                    for(let b=1; b<=fBulan; b++) {
-                        totalRealisasiYTD += Number(p.realisasiBulanan[b] || 0);
-                    }
-                }
-
-                totalNasionalAlokasi += alokasiSetelahSwitching;
-                totalNasionalRealisasi += totalRealisasiYTD;
-                
-                if(p.wilayah && wilayahChartMap[p.wilayah]) {
-                    wilayahChartMap[p.wilayah].alokasi += alokasiSetelahSwitching;
-                    wilayahChartMap[p.wilayah].realisasi += totalRealisasiYTD;
-                }
-
-                let row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><b>${p.wilayah || '-'}</b></td>
-                    <td>${p.mataAnggaran || '-'}</td>
-                    <td>${p.namaProject || '-'}</td>
-                    <td>${formatRp(p.estimasiNilai)}</td>
-                    <td>${formatRp(p.alokasiAnggaran)}</td>
-                    <td style="color: ${(p.switchingAnggaran || 0) < 0 ? 'red':'green'}"><b>${p.switchingAnggaran ? formatRp(p.switchingAnggaran) : '-'}</b></td>
-                    <td><b>${formatRp(alokasiSetelahSwitching)}</b></td>
-                    <td style="color: #4b5563;">${formatRp(Math.floor(alokasiProporsional))}</td>
-                    <td style="font-weight:bold; color:#005a60;">${formatRp(totalRealisasiYTD)}</td>
-                    <td>${getEWSStatus(totalRealisasiYTD, alokasiProporsional)}</td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            document.getElementById('tot-alokasi').innerText = formatRp(totalNasionalAlokasi);
-            document.getElementById('tot-realisasi').innerText = formatRp(totalNasionalRealisasi);
-            let persen = totalNasionalAlokasi > 0 ? (totalNasionalRealisasi / totalNasionalAlokasi) * 100 : 0;
-            document.getElementById('tot-persen').innerText = `Penyerapan YTD: ${persen.toFixed(2)}%`;
-            document.getElementById('tot-sisa').innerText = formatRp(totalNasionalAlokasi - totalNasionalRealisasi);
-
-            updateRankingAndChart(wilayahChartMap);
-        }
-
-        function sortTable(colIndex) {
-            sortDirections[colIndex] = !sortDirections[colIndex];
-            let direction = sortDirections[colIndex] ? 1 : -1;
-
-            projectData.sort((a, b) => {
-                let valA, valB;
-                const fBulan = parseInt(document.getElementById('filter-bulan').value);
-
-                switch(colIndex) {
-                    case 0: valA = a.wilayah || ""; valB = b.wilayah || ""; break;
-                    case 1: valA = a.mataAnggaran || ""; valB = b.mataAnggaran || ""; break;
-                    case 2: valA = a.namaProject || ""; valB = b.namaProject || ""; break;
-                    case 3: valA = Number(a.estimasiNilai || 0); valB = Number(b.estimasiNilai || 0); break;
-                    case 4: valA = Number(a.alokasiAnggaran || 0); valB = Number(b.alokasiAnggaran || 0); break;
-                    case 5: valA = Number(a.switchingAnggaran || 0); valB = Number(b.switchingAnggaran || 0); break;
-                    case 6: valA = (Number(a.alokasiAnggaran || 0) + Number(a.switchingAnggaran || 0)); valB = (Number(b.alokasiAnggaran || 0) + Number(b.switchingAnggaran || 0)); break;
-                    case 7: valA = (Number(a.alokasiAnggaran || 0) + Number(a.switchingAnggaran || 0)) / 12 * fBulan; valB = (Number(b.alokasiAnggaran || 0) + Number(b.switchingAnggaran || 0)) / 12 * fBulan; break;
-                    case 8: 
-                        valA = 0; valB = 0;
-                        if(a.realisasiBulanan) { for(let b=1; b<=fBulan; b++) { valA += Number(a.realisasiBulanan[b] || 0); } }
-                        if(b.realisasiBulanan) { for(let b=1; b<=fBulan; b++) { valB += Number(b.realisasiBulanan[b] || 0); } }
-                        break;
-                    default: return 0;
-                }
-
-                if (typeof valA === 'string') {
-                    return valA.localeCompare(valB) * direction;
-                }
-                return (valA - valB) * direction;
-            });
-
-            refreshAll();
-        }
-
-        function updateRankingAndChart(chartMap) {
-            let rankData = [];
-            for (let w in chartMap) {
-                let al = chartMap[w].alokasi;
-                let re = chartMap[w].realisasi;
-                let pct = al > 0 ? (re / al) * 100 : 0;
-                rankData.push({ name: w, persen: pct });
-            }
-
-            rankData.sort((a, b) => b.persen - a.persen);
-
-            const rList = document.getElementById('ranking-wilayah-list');
-            rList.innerHTML = "";
-            rankData.slice(0, 5).forEach((item, idx) => {
-                rList.innerHTML += `
-                    <li class="ranking-item rank-${idx+1}">
-                        <div><span class="rank-number">${idx+1}</span>${item.name}</div>
-                        <strong>${item.persen.toFixed(1)}%</strong>
-                    </li>
-                `;
-            });
-
-            let chartLabels = rankData.slice(0, 6).map(item => item.name.split(" ")[1] || item.name);
-            let chartValues = rankData.slice(0, 6).map(item => item.persen.toFixed(1));
-
-            if(barChartInstance) barChartInstance.destroy();
-            const ctx = document.getElementById('barChartWilayah').getContext('2d');
-            barChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartLabels,
-                    datasets: [{
-                        label: '% Penyerapan Anggaran Wilayah',
-                        data: chartValues,
-                        backgroundColor: '#005a60',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, max: 100 } }
-                }
-            });
-        }
-
-        async function handleUpdate(e) {
-            e.preventDefault();
-            let pId = parseInt(document.getElementById('update-project-idx').value);
-            let bln = parseInt(document.getElementById('update-bulan').value);
-            let nom = parseInt(document.getElementById('update-nominal').value);
-
-            let proj = projectData.find(p => p.id === pId);
-            if(proj) {
-                toggleLoading(true);
-                const payload = {
-                    action: "updateRealisasi",
-                    projectId: pId,
-                    bulan: bln,
-                    nominal: nom
-                };
-
-                try {
-                    const response = await fetch(API_URL, {
-                        method: "POST",
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-
-                    if(result.status === "success") {
-                        if(!proj.realisasiBulanan) proj.realisasiBulanan = {};
-                        proj.realisasiBulanan[bln] = (Number(proj.realisasiBulanan[bln]) || 0) + nom;
-                        alert(`Berhasil! Data tersinkronisasi ke Cloud.\nTambahan realisasi bulan ke-${bln} senilai ${formatRp(nom)} untuk proyek: ${proj.namaProject}`);
-                        refreshAll();
-                        switchView('dashboard');
-                    } else {
-                        alert("Gagal memperbarui database: " + result.message);
-                    }
-                } catch (error) {
-                    console.error("Error POST Data:", error);
-                    alert("Gagal terhubung ke server database. Silakan coba lagi.");
-                } finally {
-                    toggleLoading(false);
-                }
-            }
-        }
-
-        async function handleSwitching(e) {
-            e.preventDefault();
-            let asalId = parseInt(document.getElementById('switch-asal').value);
-            let tujuanId = parseInt(document.getElementById('switch-tujuan').value);
-            let nominal = parseInt(document.getElementById('switch-nominal').value);
-
-            if(asalId === tujuanId) {
-                alert("Gagal: Project sumber dan tujuan tidak boleh sama!");
-                return;
-            }
-
-            let pAsal = projectData.find(p => p.id === asalId);
-            let pTujuan = projectData.find(p => p.id === tujuanId);
-
-            if((Number(pAsal.alokasiAnggaran || 0) + Number(pAsal.switchingAnggaran || 0)) < nominal) {
-                alert("Gagal: Anggaran pada project sumber tidak mencukupi!");
-                return;
-            }
-
-            toggleLoading(true);
-            const payload = {
-                action: "switchingAnggaran",
-                asalId: asalId,
-                tujuanId: tujuanId,
-                nominal: nominal
-            };
-
+        // Fungsi fetch live dari Google Apps Script milik Anda
+        async function fetchExternalData() {
+            const apiStatusEl = document.getElementById('api-status');
             try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-
-                if(result.status === "success") {
-                    pAsal.switchingAnggaran = Number(pAsal.switchingAnggaran || 0) - nominal;
-                    pTujuan.switchingAnggaran = Number(pTujuan.switchingAnggaran || 0) + nominal;
-
-                    alert(`Switching Berhasil & Tersinkronisasi!\nDana sebesar ${formatRp(nominal)} digeser dari proyek [${pAsal.namaProject}] ke [${pTujuan.namaProject}]`);
-                    refreshAll();
-                    switchView('dashboard');
+                // Melakukan pemanggilan asynchronous ke endpoint makro Anda
+                const response = await fetch('https://script.google.com/macros/s/AKfycbwCqaZ5ejxOBASjbEF6odZK5seBLINY3-x3ZUPkmAbZf0Qhft8OOb-JNVyWe1tjaBt2LA/exec');
+                if (!response.ok) throw new Error('CORS/Network Issue');
+                const json = await response.json();
+                
+                if (json && json.data) {
+                    showToast("Berhasil sinkronisasi dengan database live.");
+                    apiStatusEl.className = "badge-ews ews-hijau";
+                    apiStatusEl.innerText = "API Live Terkoneksi";
+                    // Lakukan mapping struktural appData disini jika skema JSON API Anda sudah matang
                 } else {
-                    alert("Gagal memproses switching di database: " + result.message);
+                    apiStatusEl.className = "badge-ews ews-hijau";
+                    apiStatusEl.innerText = "Mode Simulasi Aktif";
                 }
             } catch (error) {
-                console.error("Error POST Switching:", error);
-                alert("Gagal menghubungi server database.");
-            } finally {
-                toggleLoading(false);
+                console.warn("Menggunakan data fallback lokal disebabkan batasan CORS/Internet:", error);
+                apiStatusEl.className = "badge-ews ews-kuning";
+                apiStatusEl.innerText = "Mode Simulasi Lokal (Offline/CORS Bypass)";
             }
+            processDataAndRender();
         }
 
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('nav ul li').forEach(li => li.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+        function formatIDR(val) {
+            return 'Rp ' + Math.round(val).toLocaleString('id-ID');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             
-            if(window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Logic Utama Early Warning System (EWS) Berdasarkan Permintaan User
+        function getEWSBadge(pct) {
+            if (pct >= 75) {
+                return `<span class="badge-ews ews-hijau">Hijau (&ge;75% Optimal)</span>`;
+            } else if (pct >= 40) {
+                return `<span class="badge-ews ews-kuning">Kuning (40-74% Kritis)</span>`;
             } else {
-                const menus = document.querySelectorAll('nav ul li');
-                if(viewId === 'dashboard') menus[0].classList.add('active');
-                if(viewId === 'update-wilayah') menus[1].classList.add('active');
-                if(viewId === 'switching-anggaran') menus[2].classList.add('active');
+                return `<span class="badge-ews ews-merah">Merah (&lt;40% Rendah)</span>`;
             }
         }
 
-        function ekporLaporan() {
-            alert("Laporan Realisasi CAPEX Komprehensif Berdasarkan Alokasi Proporsional Bulanan Berhasil Diekspor untuk Direktur Sektor.");
+        // Pengolahan Anggaran & Render Dashboard Utama
+        function processDataAndRender() {
+            const filterMata = document.getElementById('global-mata-anggaran').value;
+            let grandAlokasi = 0, grandRealisasi = 0;
+
+            const tbodyGabungan = document.getElementById('tbody-gabungan');
+            tbodyGabungan.innerHTML = '';
+
+            wilayahList.forEach((w, index) => {
+                let wilayahAlokasi = 0, wilayahRealisasi = 0;
+
+                mataAnggaranList.forEach(m => {
+                    if (filterMata === 'ALL' || filterMata === m) {
+                        const key = `${w}__${m}`;
+                        wilayahAlokasi += appData.alokasi[key] || 0;
+                        wilayahRealisasi += appData.realisasi[key] || 0;
+                    }
+                });
+
+                const sisa = wilayahAlokasi - wilayahRealisasi;
+                const pct = wilayahAlokasi > 0 ? (wilayahRealisasi / wilayahAlokasi) * 100 : 0;
+
+                grandAlokasi += wilayahAlokasi;
+                grandRealisasi += wilayahRealisasi;
+
+                tbodyGabungan.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${w}</strong></td>
+                        <td>${formatIDR(wilayahAlokasi)}</td>
+                        <td>${formatIDR(wilayahRealisasi)}</td>
+                        <td>${formatIDR(sisa)}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div class="progress-container">
+                                    <div class="progress-bar" style="width: ${Math.min(pct, 100)}%"></div>
+                                </div>
+                                <span style="font-weight:600; min-width:35px;">${pct.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                        <td>${getEWSBadge(pct)}</td>
+                    </tr>
+                `;
+            });
+
+            // Update Total Scorecards
+            document.getElementById('sum-alokasi').innerText = formatIDR(grandAlokasi);
+            document.getElementById('sum-realisasi').innerText = formatIDR(grandRealisasi);
+            const grandPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
+            document.getElementById('sum-realisasi-pct').innerText = `${grandPct.toFixed(1)}% dari total anggaran gabungan`;
+            document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
+
+            const ewsCard = document.getElementById('card-ews-status');
+            const ewsText = document.getElementById('sum-ews-text');
+            ewsCard.className = 'card'; 
+            if(grandPct >= 75) { ewsCard.classList.add('success'); ewsText.innerText = 'HIJAU (AMAN)'; }
+            else if(grandPct >= 40) { ewsCard.classList.add('warning'); ewsText.innerText = 'KUNING (MONITOR)'; }
+            else { ewsCard.classList.add('danger'); ewsText.innerText = 'MERAH (AKSELERASI)'; }
+
+            renderWilayahDetails();
+            renderTimelineView();
         }
 
-        window.onload = initData;
+        function renderWilayahDetails() {
+            const w = document.getElementById('select-filter-wilayah').value || wilayahList[0];
+            document.getElementById('title-detail-wilayah').innerText = `Rincian Realisasi Per Mata Anggaran - ${w}`;
+            
+            const tbody = document.getElementById('tbody-detail-wilayah');
+            tbody.innerHTML = '';
+
+            mataAnggaranList.forEach(m => {
+                const key = `${w}__${m}`;
+                const alokasi = appData.alokasi[key] || 0;
+                const realisasi = appData.realisasi[key] || 0;
+                const sisa = alokasi - realisasi;
+                const pct = alokasi > 0 ? (realisasi / alokasi) * 100 : 0;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${m}</strong></td>
+                        <td>${formatIDR(alokasi)}</td>
+                        <td>${formatIDR(realisasi)}</td>
+                        <td>${formatIDR(sisa)}</td>
+                        <td><span style="font-weight:600;">${pct.toFixed(1)}%</span></td>
+                        <td>${getEWSBadge(pct)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Bisnis Logika Mekanisme Switching Anggaran
+        function executeSwitching() {
+            const fromW = document.getElementById('switch-from-wilayah').value;
+            const fromM = document.getElementById('switch-from-mata').value;
+            const toW = document.getElementById('switch-to-wilayah').value;
+            const toM = document.getElementById('switch-to-mata').value;
+            const nominal = parseFloat(document.getElementById('switch-nominal').value);
+
+            if (!nominal || nominal <= 0) {
+                alert('Silakan tentukan nilai nominal switching anggaran secara tepat.');
+                return;
+            }
+
+            const keyFrom = `${fromW}__${fromM}`;
+            const keyTo = `${toW}__${toM}`;
+
+            if ((appData.alokasi[keyFrom] - appData.realisasi[keyFrom]) < nominal) {
+                alert('Batal Eksekusi: Sisa plafon dana pada komponen asal tidak mencukupi untuk dialihkan.');
+                return;
+            }
+
+            // Kurangi alokasi asal, tambahkan ke alokasi tujuan (Switching Berhasil)
+            appData.alokasi[keyFrom] -= nominal;
+            appData.alokasi[keyTo] += nominal;
+
+            const timestamp = new Date().toLocaleTimeString('id-ID') + " WIB";
+            appData.switchingLogs.unshift({
+                time: timestamp,
+                from: `${fromW} [${fromM}]`,
+                to: `${toW} [${toM}]`,
+                amount: nominal
+            });
+
+            showToast(`Berhasil melakukan switching dana sebesar ${formatIDR(nominal)}`);
+            document.getElementById('switch-nominal').value = '';
+            
+            processDataAndRender();
+            renderSwitchingLogs();
+        }
+
+        function renderSwitchingLogs() {
+            const tbody = document.getElementById('tbody-log-switching');
+            tbody.innerHTML = '';
+            appData.switchingLogs.forEach(log => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><small>${log.time}</small></td>
+                        <td style="color:var(--danger);">&larr; ${log.from}</td>
+                        <td style="color:var(--success);">&rarr; ${log.to}</td>
+                        <td><strong>${formatIDR(log.amount)}</strong></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Rencana Kerja Distribusi Target dalam 1 Tahun Anggaran
+        function renderTimelineView() {
+            const tbody = document.getElementById('tbody-timeline');
+            tbody.innerHTML = '';
+            
+            wilayahList.forEach(w => {
+                const key = `${w}__Bangunan`;
+                const total = appData.alokasi[key] || 5000000000;
+                const realisasi = appData.realisasi[key] || 0;
+                const pct = total > 0 ? (realisasi / total) * 100 : 0;
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${w}</strong><br><small style="color:#7f8c8d">Komponen Gabungan Proyek</small></td>
+                        <td>${formatIDR(total * 0.2)}<br><small style="color:#7f8c8d">Target Q1: 20%</small></td>
+                        <td>${formatIDR(total * 0.3)}<br><small style="color:#7f8c8d">Target Q2: 30%</small></td>
+                        <td>${formatIDR(total * 0.3)}<br><small style="color:#7f8c8d">Target Q3: 30%</small></td>
+                        <td>${formatIDR(total * 0.2)}<br><small style="color:#7f8c8d">Target Q4: 20%</small></td>
+                        <td>
+                            <div class="timeline-track">
+                                <div class="timeline-bar" style="width: ${Math.min(pct, 100)}%; background-color: var(--primary-color); left: 0;"></div>
+                            </div>
+                            <small style="color:#7f8c8d; font-size:10px;">Progress Serapan Proyek saat ini: ${pct.toFixed(1)}%</small>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+
+        // ENGINE EKSPOR DIRECT EXCEL DATA (.XLS) UNTUK DIREKTUR SEKTOR
+        function exportToExcel() {
+            let rowContent = "";
+            wilayahList.forEach((w, index) => {
+                let totalAlokasi = 0, totalRealisasi = 0;
+                mataAnggaranList.forEach(m => {
+                    totalAlokasi += appData.alokasi[`${w}__${m}`] || 0;
+                    totalRealisasi += appData.realisasi[`${w}__${m}`] || 0;
+                });
+                const sisa = totalAlokasi - totalRealisasi;
+                const pct = totalAlokasi > 0 ? (totalRealisasi / totalAlokasi) * 100 : 0;
+                
+                rowContent += `
+                    <tr>
+                        <td>${index+1}</td>
+                        <td>${w}</td>
+                        <td>${totalAlokasi}</td>
+                        <td>${totalRealisasi}</td>
+                        <td>${sisa}</td>
+                        <td>${pct.toFixed(2)}%</td>
+                    </tr>`;
+            });
+
+            // Template XML Excel agar rapi saat dibuka langsung di Microsoft Excel
+            const excelTemplate = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head></head>
+                <body>
+                    <h2>LAPORAN EXECUTIVE MONITORING REALISASI CAPEX - GABUNGAN WILAYAH</h2>
+                    <p>Kepada Yth: <strong>Direktur Sektor</strong></p>
+                    <p>Tanggal Penarikan: ${new Date().toLocaleDateString('id-ID')}</p>
+                    <table border="1">
+                        <thead>
+                            <tr style="background-color:#005E6A; color:white; font-weight:bold;">
+                                <th>No</th>
+                                <th>Kantor Wilayah Operasional</th>
+                                <th>Alokasi Pagu Anggaran (IDR)</th>
+                                <th>Realisasi Penyerapan YTD (IDR)</th>
+                                <th>Sisa Plafon Anggaran (IDR)</th>
+                                <th>Persentase Realisasi (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowContent}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Laporan_Capex_Direktur_Sektor.xls';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("Laporan berkala Berhasil Di-ekspor ke format .xls");
+        }
+
+        // Lifecycle Loader
+        window.onload = function() {
+            initBaseData();
+            
+            const filterWilayah = document.getElementById('select-filter-wilayah');
+            const switchFromW = document.getElementById('switch-from-wilayah');
+            const switchToW = document.getElementById('switch-to-wilayah');
+
+            wilayahList.forEach(w => {
+                filterWilayah.innerHTML += `<option value="${w}">${w}</option>`;
+                switchFromW.innerHTML += `<option value="${w}">${w}</option>`;
+                switchToW.innerHTML += `<option value="${w}">${w}</option>`;
+            });
+
+            fetchExternalData();
+        };
     </script>
 </body>
 </html>

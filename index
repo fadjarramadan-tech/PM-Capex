@@ -247,59 +247,58 @@
 
         const mataAnggaranList = ["Tanah", "Bangunan", "Perbotan Non Otomasi", "Kendaraan"];
 
-        // State Management Global - PASTIKAN asetCount ADA DI SINI
-let appData = {
-    alokasi: {},
-    realisasi: {},
-    asetCount: {}, // <-- Pastikan baris ini ada dan tidak terhapus
-    switchingLogs: []
-};
+        // State Management Global
+        let appData = {
+            alokasi: {},
+            realisasi: {},
+            asetCount: {}, 
+            switchingLogs: []
+        };
 
-        // Seed data presisi agar grafik EWS menyala dinamis sesuai gambar
+        // Fungsi inisialisasi awal struktur data kosong
         function initBaseData() {
-    // Kosongkan atau beri nilai default awal 0 untuk seluruh wilayah agar siap menerima pasokan data dari API Sheets
-    wilayahList.forEach(w => {
-        appData.asetCount[w] = 0; // Default diatur ke 0 sebelum dihitung oleh API
-        mataAnggaranList.forEach(m => {
-            const key = `${w}__${m}`;
-            appData.alokasi[key] = 0;
-            appData.realisasi[key] = 0;
-        });
-    });
-}
+            appData.alokasi = {};
+            appData.realisasi = {};
+            appData.asetCount = {};
 
-        async function fetchExternalData() {
-    const apiStatusEl = document.getElementById('api-status');
-    try {
-        // PERBAIKAN: Menggunakan URL API Google Apps Script Anda yang baru
-        const response = await fetch('https://script.google.com/macros/s/AKfycbyqyvXh2jclWVZE4STJ8G0c_M8agRnR8lk-WS1zCwXRkhQ6lthOjv_9VgA0QgIMkRn1nA/exec');
-        if (!response.ok) throw new Error('CORS or Network restriction check');
-        
-        const json = await response.json();
-        
-        // Memastikan payload alokasi dan realisasi dari sheets berhasil ditangkap
-        if (json && json.alokasi && json.realisasi) {
-            // Overwrite data simulasi lokal dengan data riil dari Google Sheets Anda
-            appData.alokasi = json.alokasi;
-            appData.realisasi = json.realisasi;
-            
-            // Masukkan data jumlah proyek/aset aktif secara dinamis jika tersedia
-            if (json.asetCount) {
-                appData.asetCount = json.asetCount;
-            }
-            
-            showToast("Berhasil sinkronisasi dengan database Google Sheets Live.");
-            apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
-            apiStatusEl.innerText = "API Live Terkoneksi";
+            wilayahList.forEach(w => {
+                appData.asetCount[w] = 0; 
+                mataAnggaranList.forEach(m => {
+                    const key = `${w}__${m}`;
+                    appData.alokasi[key] = 0;
+                    appData.realisasi[key] = 0;
+                });
+            });
         }
-    } catch (e) {
-        console.warn("Koneksi gagal, menggunakan data lokal / simulasi:", e);
-        apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
-        apiStatusEl.innerText = "Mode Data Simulasi Aktif";
-    }
-    // Render ulang seluruh komponen UI Card Dashboard dengan data baru
-    processDataAndRender();
-}
+
+        // Mengambil data eksternal dari API Google Sheets Anda
+        async function fetchExternalData() {
+            const apiStatusEl = document.getElementById('api-status');
+            try {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbyqyvXh2jclWVZE4STJ8G0c_M8agRnR8lk-WS1zCwXRkhQ6lthOjv_9VgA0QgIMkRn1nA/exec');
+                if (!response.ok) throw new Error('CORS or Network restriction check');
+                
+                const json = await response.json();
+                
+                if (json && json.alokasi && json.realisasi) {
+                    appData.alokasi = json.alokasi;
+                    appData.realisasi = json.realisasi;
+                    
+                    if (json.asetCount) {
+                        appData.asetCount = json.asetCount;
+                    }
+                    
+                    showToast("Berhasil sinkronisasi dengan database Google Sheets Live.");
+                    apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                    apiStatusEl.innerText = "API Live Terkoneksi";
+                }
+            } catch (e) {
+                console.warn("Koneksi gagal, menggunakan data lokal / simulasi:", e);
+                apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
+                apiStatusEl.innerText = "Mode Data Simulasi Aktif";
+            }
+            processDataAndRender();
+        }
 
         function formatIDR(val) {
             return 'Rp ' + Math.round(val).toLocaleString('id-ID');
@@ -317,7 +316,7 @@ let appData = {
             event.currentTarget.classList.remove('text-slate-500');
         }
 
-        // PEMROSESAN UTAMA GRID MATRIX DASHBOARD BARU (MATCHING UI IMAGE)
+        // Pengolahan data dan render komponen Card Grid
         function processDataAndRender() {
             const filterMata = document.getElementById('global-mata-anggaran').value;
             const gridContainer = document.getElementById('regional-metrics-grid');
@@ -340,7 +339,6 @@ let appData = {
                 grandAlokasi += wilayahAlokasi;
                 grandRealisasi += wilayahRealisasi;
 
-                // Hitung Penentuan Warna Indikator EWS (Merah, Kuning, Hijau)
                 let ewsBadgeStyle = "";
                 let progressColorStyle = "bg-teal-700";
                 let borderHighlight = "border-slate-200";
@@ -357,13 +355,12 @@ let appData = {
                     borderHighlight = "border-rose-300 shadow-sm shadow-rose-50"; 
                 }
 
-                // Append Card Baru ke Grid (100% Mengikuti Struktur Visual Input)
                 gridContainer.innerHTML += `
                     <div class="bg-white rounded-xl p-4 shadow-sm border ${borderHighlight} transition hover:shadow-md flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-1.5">
                                 <h4 class="text-xs font-bold text-slate-800 truncate pr-2" title="${w}">${w}</h4>
-                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${appData.asetCount[w]} project</span>
+                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${appData.asetCount[w] || 0} project</span>
                             </div>
                             <div class="text-sm font-black text-slate-700 mb-3">${formatIDR(wilayahRealisasi)}</div>
                         </div>
@@ -386,7 +383,6 @@ let appData = {
                 `;
             });
 
-            // Update Global Summary Cards
             document.getElementById('sum-alokasi').innerText = formatIDR(grandAlokasi);
             document.getElementById('sum-realisasi').innerText = formatIDR(grandRealisasi);
             const totalPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
@@ -404,7 +400,6 @@ let appData = {
             renderTimelineView();
         }
 
-        // Render Tab 2 Details Component
         function renderWilayahDetails() {
             const currentW = document.getElementById('select-filter-wilayah').value || wilayahList[0];
             document.getElementById('title-detail-wilayah').innerText = `Rincian Anggaran & Penyerapan EWS - ${currentW}`;
@@ -434,7 +429,6 @@ let appData = {
             });
         }
 
-        // Core Logika Switching Anggaran Antar Wilayah / Pos Akuntansi
         function executeSwitching() {
             const fW = document.getElementById('switch-from-wilayah').value;
             const fM = document.getElementById('switch-from-mata').value;
@@ -484,7 +478,6 @@ let appData = {
             });
         }
 
-        // Render S-Curve Target Rencana Penyerapan
         function renderTimelineView() {
             const tbody = document.getElementById('tbody-timeline');
             tbody.innerHTML = '';
@@ -519,7 +512,6 @@ let appData = {
             setTimeout(() => { toast.style.display = 'none'; }, 3000);
         }
 
-        // Modul Ekspor File Format .xls Untuk Direktur Sektor
         function exportToExcel() {
             let context = "";
             wilayahList.forEach((w, index) => {
@@ -550,22 +542,24 @@ let appData = {
             showToast("Berkas excel berhasil diekspor.");
         }
 
+        // PERBAIKAN SIKLUS ONLOAD: Memisahkan deklarasi fungsi dari eksekusi siklus hidup window
         window.onload = function() {
-            function initBaseData() {
-    // Reset state agar bersih sebelum menerima pasokan data dari API Sheets
-    appData.alokasi = {};
-    appData.realisasi = {};
-    appData.asetCount = {}; // Mencegah error 'undefined' saat looping wilayah
+            initBaseData();
 
-    wilayahList.forEach(w => {
-        appData.asetCount[w] = 0; // Sekarang baris ini aman dari error
-        mataAnggaranList.forEach(m => {
-            const key = `${w}__${m}`;
-            appData.alokasi[key] = 0;
-            appData.realisasi[key] = 0;
-        });
-    });
-};
+            const fillFilter = document.getElementById('select-filter-wilayah');
+            const fW = document.getElementById('switch-from-wilayah');
+            const tW = document.getElementById('switch-to-wilayah');
+
+            wilayahList.forEach(w => {
+                fillFilter.innerHTML += `<option value="${w}">${w}</option>`;
+                fW.innerHTML += `<option value="${w}">${w}</option>`;
+                tW.innerHTML += `<option value="${w}">${w}</option>`;
+            });
+
+            // Jalankan pemanggilan data langsung ke server API Sheets
+            fetchExternalData();
+            lucide.createIcons();
+        };
     </script>
 </body>
 </html>

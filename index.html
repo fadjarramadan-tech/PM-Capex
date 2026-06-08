@@ -378,7 +378,7 @@
                             </tr>
                         </thead>
                         <tbody id="monitoring-data">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -454,19 +454,16 @@
         let sortDirections = [];
         let barChartInstance = null;
 
-        // Fungsi pembantu untuk efek Loading
         function toggleLoading(show) {
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
         }
 
-        // AMBIL DATA DARI DATABASE (Google Sheets via API)
         async function initData() {
             toggleLoading(true);
             try {
                 const response = await fetch(API_URL);
                 const result = await response.json();
                 
-                // Jika database kosong atau API mengembalikan status error, gunakan dummy fallback
                 if (result && result.status === "success" && result.data && result.data.length > 0) {
                     projectData = result.data;
                 } else {
@@ -510,6 +507,7 @@
             });
         }
 
+        // PERBAIKAN: Fungsi populateDropdowns() telah ditambahkan safeguard pengaman string kosong
         function populateDropdowns() {
             const fWil = document.getElementById('filter-wilayah');
             fWil.innerHTML = '<option value="ALL">-- Semua Wilayah --</option>';
@@ -524,7 +522,14 @@
             updProj.innerHTML = ""; swAsal.innerHTML = ""; swTujuan.innerHTML = "";
 
             projectData.forEach(p => {
-                let optTxt = `[${p.wilayah.split(' ')[1] || p.wilayah}] - ${p.namaProject}`;
+                // Berikan fallback jika objek wilayah tidak ada atau tidak memiliki teks
+                let namaWilayah = p.wilayah ? String(p.wilayah).trim() : "Wilayah Kosong";
+                let namaProjectAman = p.namaProject ? String(p.namaProject).trim() : "Proyek Tanpa Nama";
+                
+                // Eksekusi split secara aman
+                let namaPendek = namaWilayah.split(' ')[1] || namaWilayah;
+                let optTxt = `[${namaPendek}] - ${namaProjectAman}`;
+                
                 updProj.innerHTML += `<option value="${p.id}">${optTxt}</option>`;
                 swAsal.innerHTML += `<option value="${p.id}">${optTxt}</option>`;
                 swTujuan.innerHTML += `<option value="${p.id}">${optTxt}</option>`;
@@ -561,35 +566,37 @@
             let filteredData = projectData.filter(p => {
                 if(fWil !== "ALL" && p.wilayah !== fWil) return false;
                 if(fMata !== "ALL" && p.mataAnggaran !== fMata) return false;
-                if(sProj && !p.namaProject.toLowerCase().includes(sProj)) return false;
+                if(sProj && !String(p.namaProject).toLowerCase().includes(sProj)) return false;
                 return true;
             });
 
             filteredData.forEach(p => {
-                let alokasiSetelahSwitching = Number(p.alokasiAnggaran) + Number(p.switchingAnggaran);
+                let alokasiSetelahSwitching = Number(p.alokasiAnggaran || 0) + Number(p.switchingAnggaran || 0);
                 let alokasiProporsional = (alokasiSetelahSwitching / 12) * fBulan;
 
                 let totalRealisasiYTD = 0;
-                for(let b=1; b<=fBulan; b++) {
-                    totalRealisasiYTD += Number(p.realisasiBulanan[b] || 0);
+                if (p.realisasiBulanan) {
+                    for(let b=1; b<=fBulan; b++) {
+                        totalRealisasiYTD += Number(p.realisasiBulanan[b] || 0);
+                    }
                 }
 
                 totalNasionalAlokasi += alokasiSetelahSwitching;
                 totalNasionalRealisasi += totalRealisasiYTD;
                 
-                if(wilayahChartMap[p.wilayah]) {
+                if(p.wilayah && wilayahChartMap[p.wilayah]) {
                     wilayahChartMap[p.wilayah].alokasi += alokasiSetelahSwitching;
                     wilayahChartMap[p.wilayah].realisasi += totalRealisasiYTD;
                 }
 
                 let row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><b>${p.wilayah}</b></td>
-                    <td>${p.mataAnggaran}</td>
-                    <td>${p.namaProject}</td>
+                    <td><b>${p.wilayah || '-'}</b></td>
+                    <td>${p.mataAnggaran || '-'}</td>
+                    <td>${p.namaProject || '-'}</td>
                     <td>${formatRp(p.estimasiNilai)}</td>
                     <td>${formatRp(p.alokasiAnggaran)}</td>
-                    <td style="color: ${p.switchingAnggaran < 0 ? 'red':'green'}"><b>${p.switchingAnggaran !== 0 ? formatRp(p.switchingAnggaran) : '-'}</b></td>
+                    <td style="color: ${(p.switchingAnggaran || 0) < 0 ? 'red':'green'}"><b>${p.switchingAnggaran ? formatRp(p.switchingAnggaran) : '-'}</b></td>
                     <td><b>${formatRp(alokasiSetelahSwitching)}</b></td>
                     <td style="color: #4b5563;">${formatRp(Math.floor(alokasiProporsional))}</td>
                     <td style="font-weight:bold; color:#005a60;">${formatRp(totalRealisasiYTD)}</td>
@@ -616,17 +623,18 @@
                 const fBulan = parseInt(document.getElementById('filter-bulan').value);
 
                 switch(colIndex) {
-                    case 0: valA = a.wilayah; valB = b.wilayah; break;
-                    case 1: valA = a.mataAnggaran; valB = b.mataAnggaran; break;
-                    case 2: valA = a.namaProject; valB = b.namaProject; break;
-                    case 3: valA = Number(a.estimasiNilai); valB = Number(b.estimasiNilai); break;
-                    case 4: valA = Number(a.alokasiAnggaran); valB = Number(b.alokasiAnggaran); break;
-                    case 5: valA = Number(a.switchingAnggaran); valB = Number(b.switchingAnggaran); break;
-                    case 6: valA = (Number(a.alokasiAnggaran) + Number(a.switchingAnggaran)); valB = (Number(b.alokasiAnggaran) + Number(b.switchingAnggaran)); break;
-                    case 7: valA = (Number(a.alokasiAnggaran) + Number(a.switchingAnggaran)) / 12 * fBulan; valB = (Number(b.alokasiAnggaran) + Number(b.switchingAnggaran)) / 12 * fBulan; break;
+                    case 0: valA = a.wilayah || ""; valB = b.wilayah || ""; break;
+                    case 1: valA = a.mataAnggaran || ""; valB = b.mataAnggaran || ""; break;
+                    case 2: valA = a.namaProject || ""; valB = b.namaProject || ""; break;
+                    case 3: valA = Number(a.estimasiNilai || 0); valB = Number(b.estimasiNilai || 0); break;
+                    case 4: valA = Number(a.alokasiAnggaran || 0); valB = Number(b.alokasiAnggaran || 0); break;
+                    case 5: valA = Number(a.switchingAnggaran || 0); valB = Number(b.switchingAnggaran || 0); break;
+                    case 6: valA = (Number(a.alokasiAnggaran || 0) + Number(a.switchingAnggaran || 0)); valB = (Number(b.alokasiAnggaran || 0) + Number(b.switchingAnggaran || 0)); break;
+                    case 7: valA = (Number(a.alokasiAnggaran || 0) + Number(a.switchingAnggaran || 0)) / 12 * fBulan; valB = (Number(b.alokasiAnggaran || 0) + Number(b.switchingAnggaran || 0)) / 12 * fBulan; break;
                     case 8: 
                         valA = 0; valB = 0;
-                        for(let b=1; b<=fBulan; b++) { valA += Number(a.realisasiBulanan[b] || 0); valB += Number(b.realisasiBulanan[b] || 0); }
+                        if(a.realisasiBulanan) { for(let b=1; b<=fBulan; b++) { valA += Number(a.realisasiBulanan[b] || 0); } }
+                        if(b.realisasiBulanan) { for(let b=1; b<=fBulan; b++) { valB += Number(b.realisasiBulanan[b] || 0); } }
                         break;
                     default: return 0;
                 }
@@ -686,7 +694,6 @@
             });
         }
 
-        // SIMPAN REALISASI BARU KE DATABASE (POST)
         async function handleUpdate(e) {
             e.preventDefault();
             let pId = parseInt(document.getElementById('update-project-idx').value);
@@ -696,8 +703,6 @@
             let proj = projectData.find(p => p.id === pId);
             if(proj) {
                 toggleLoading(true);
-                
-                // Struktur payload data yang dikirim ke API
                 const payload = {
                     action: "updateRealisasi",
                     projectId: pId,
@@ -713,7 +718,7 @@
                     const result = await response.json();
 
                     if(result.status === "success") {
-                        // Perbarui state di sisi client lokal
+                        if(!proj.realisasiBulanan) proj.realisasiBulanan = {};
                         proj.realisasiBulanan[bln] = (Number(proj.realisasiBulanan[bln]) || 0) + nom;
                         alert(`Berhasil! Data tersinkronisasi ke Cloud.\nTambahan realisasi bulan ke-${bln} senilai ${formatRp(nom)} untuk proyek: ${proj.namaProject}`);
                         refreshAll();
@@ -730,7 +735,6 @@
             }
         }
 
-        // SIMPAN PERGESERAN ANGGARAN (SWITCHING) KE DATABASE (POST)
         async function handleSwitching(e) {
             e.preventDefault();
             let asalId = parseInt(document.getElementById('switch-asal').value);
@@ -745,13 +749,12 @@
             let pAsal = projectData.find(p => p.id === asalId);
             let pTujuan = projectData.find(p => p.id === tujuanId);
 
-            if((Number(pAsal.alokasiAnggaran) + Number(pAsal.switchingAnggaran)) < nominal) {
+            if((Number(pAsal.alokasiAnggaran || 0) + Number(pAsal.switchingAnggaran || 0)) < nominal) {
                 alert("Gagal: Anggaran pada project sumber tidak mencukupi!");
                 return;
             }
 
             toggleLoading(true);
-
             const payload = {
                 action: "switchingAnggaran",
                 asalId: asalId,
@@ -767,8 +770,8 @@
                 const result = await response.json();
 
                 if(result.status === "success") {
-                    pAsal.switchingAnggaran -= nominal;
-                    pTujuan.switchingAnggaran += nominal;
+                    pAsal.switchingAnggaran = Number(pAsal.switchingAnggaran || 0) - nominal;
+                    pTujuan.switchingAnggaran = Number(pTujuan.switchingAnggaran || 0) + nominal;
 
                     alert(`Switching Berhasil & Tersinkronisasi!\nDana sebesar ${formatRp(nominal)} digeser dari proyek [${pAsal.namaProject}] ke [${pTujuan.namaProject}]`);
                     refreshAll();
@@ -789,11 +792,9 @@
             document.querySelectorAll('nav ul li').forEach(li => li.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             
-            // Mengatasi error jika pemanggilan switchView tidak dipicu langsung dari event click li
             if(window.event && window.event.currentTarget) {
                 window.event.currentTarget.classList.add('active');
             } else {
-                // Fallback pencarian manual menu list
                 const menus = document.querySelectorAll('nav ul li');
                 if(viewId === 'dashboard') menus[0].classList.add('active');
                 if(viewId === 'update-wilayah') menus[1].classList.add('active');

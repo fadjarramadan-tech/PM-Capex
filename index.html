@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Monitoring Realisasi CAPEX v3</title>
-    <!-- Chart.js untuk Grafik Interaktif -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -269,9 +268,18 @@
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .chart-wrapper { position: relative; height: 220px; width: 100%; }
+        
+        /* Loading overlay style */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.7); display: none; justify-content: center;
+            align-items: center; z-index: 9999; font-weight: bold; color: #005a60;
+        }
     </style>
 </head>
 <body>
+
+    <div id="loading" class="loading-overlay">Memproses sinkronisasi data database...</div>
 
     <header>
         <h1>Sistem Monitoring CAPEX Bulanan v3</h1>
@@ -288,14 +296,12 @@
         </nav>
 
         <main>
-            <!-- DASHBOARD UTAMA -->
             <div id="dashboard" class="view-section active">
                 <div class="table-header-actions">
                     <h2>Kombinasi Realisasi vs Alokasi CAPEX Nasional</h2>
                     <button class="btn btn-success" onclick="ekporLaporan()">Ekspor Laporan (Direktur Sektor)</button>
                 </div>
 
-                <!-- Scorecards -->
                 <div class="dashboard-cards">
                     <div class="card">
                         <h3>Total Alokasi (Full Year)</h3>
@@ -312,7 +318,6 @@
                     </div>
                 </div>
 
-                <!-- DROPLIST FILTERS & SEARCH BOX -->
                 <div class="filter-panel">
                     <div>
                         <label style="font-size:12px; font-weight:600; color:#475569;">Filter Wilayah</label>
@@ -345,7 +350,6 @@
                     </div>
                 </div>
 
-                <!-- CHARTS & RANKINGS -->
                 <div class="grid-charts-ranking">
                     <div class="chart-box">
                         <div class="chart-wrapper"><canvas id="barChartWilayah"></canvas></div>
@@ -356,7 +360,6 @@
                     </div>
                 </div>
 
-                <!-- TABEL UTAMA DENGAN SORTING HEADER -->
                 <div class="table-container">
                     <table>
                         <thead>
@@ -374,15 +377,12 @@
                             </tr>
                         </thead>
                         <tbody id="monitoring-data">
-                            <!-- Data dimuat via JS -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- UPDATE REALISASI -->
             <div id="update-wilayah" class="view-section">
-                <!-- Form input realisasi project -->
                 <div class="table-container" style="max-width: 600px; margin: 0 auto;">
                     <h3>Form Pelaporan Realisasi Anggaran</h3><br>
                     <form id="form-update" onsubmit="handleUpdate(event)">
@@ -407,14 +407,13 @@
                         </div>
                         <div class="form-group">
                             <label>Dokumen Underlying (PDF/Image)</label>
-                            <input type="file" class="form-control" required>
+                            <input type="file" id="update-file" class="form-control">
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Realisasi</button>
                     </form>
                 </div>
             </div>
 
-            <!-- SWITCHING ANGGARAN -->
             <div id="switching-anggaran" class="view-section">
                 <div class="table-container" style="max-width: 600px; margin: 0 auto;">
                     <h3>Fasilitas Switching Anggaran Antar Proyek</h3><br>
@@ -439,6 +438,8 @@
     </div>
 
     <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwCqaZ5ejxOBASjbEF6odZK5seBLINY3-x3ZUPkmAbZf0Qhft8OOb-JNVyWe1tjaBt2LA/exec";
+
         const wilayahList = [
             "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palembang)", 
             "Wilayah 04 (Bandung)", "Wilayah 05 (Semarang)", "Wilayah 06 (Surabaya)", 
@@ -448,29 +449,52 @@
             "Wilayah 17 (Yogyakarta)", "Wilayah 18 (Malang)"
         ];
 
-        // Database Berbasis Baris Project Komprehensif
         let projectData = [];
         let sortDirections = [];
         let barChartInstance = null;
 
-        function initData() {
-            // Generate dummy projects otomatis untuk 18 Wilayah & 4 Mata Anggaran
+        // Fungsi pembantu untuk efek Loading
+        function toggleLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        // AMBIL DATA DARI DATABASE (Google Sheets via API)
+        async function initData() {
+            toggleLoading(true);
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                // Jika database kosong atau API mengembalikan status error, gunakan dummy fallback
+                if (result && result.status === "success" && result.data && result.data.length > 0) {
+                    projectData = result.data;
+                } else {
+                    console.warn("Database kosong/gagal dimuat. Menggunakan data lokal (dummy).");
+                    generateDummyData();
+                }
+            } catch (error) {
+                console.error("Gagal terhubung ke API:", error);
+                generateDummyData();
+            } finally {
+                populateDropdowns();
+                refreshAll();
+                toggleLoading(false);
+            }
+        }
+
+        function generateDummyData() {
             let id = 0;
+            projectData = [];
             wilayahList.forEach((w, wIdx) => {
                 const mataAnggaran = ["Tanah", "Bangunan", "Perabotan Non Otomasi", "Kendaraan"];
                 mataAnggaran.forEach((m, mIdx) => {
                     id++;
                     let alokasiAwal = (wIdx + 1) * 2000000000 + (mIdx * 500000000);
-                    
-                    // Membuat data realisasi bulanan (1-12)
                     let realisasiBulanan = {};
-                    let totalRealisasiLari = 0;
                     for(let b=1; b<=12; b++) {
-                        // Simulasi penyerapan bertahap
                         let nilaiBulan = b <= 5 ? Math.floor(alokasiAwal * 0.05) : Math.floor(alokasiAwal * 0.07);
                         realisasiBulanan[b] = nilaiBulan;
                     }
-
                     projectData.push({
                         id: id,
                         wilayah: w,
@@ -483,20 +507,15 @@
                     });
                 });
             });
-
-            populateDropdowns();
-            refreshAll();
         }
 
         function populateDropdowns() {
-            // Dropdown filter wilayah
             const fWil = document.getElementById('filter-wilayah');
             fWil.innerHTML = '<option value="ALL">-- Semua Wilayah --</option>';
             wilayahList.forEach(w => {
                 fWil.innerHTML += `<option value="${w}">${w}</option>`;
             });
 
-            // Dropdown form update & switching
             const updProj = document.getElementById('update-project-idx');
             const swAsal = document.getElementById('switch-asal');
             const swTujuan = document.getElementById('switch-tujuan');
@@ -534,12 +553,10 @@
 
             let totalNasionalAlokasi = 0;
             let totalNasionalRealisasi = 0;
-            let totalNasionalSisa = 0;
 
             let wilayahChartMap = {};
             wilayahList.forEach(w => wilayahChartMap[w] = { alokasi: 0, realisasi: 0 });
 
-            // Filter data
             let filteredData = projectData.filter(p => {
                 if(fWil !== "ALL" && p.wilayah !== fWil) return false;
                 if(fMata !== "ALL" && p.mataAnggaran !== fMata) return false;
@@ -548,22 +565,21 @@
             });
 
             filteredData.forEach(p => {
-                let alokasiSetelahSwitching = p.alokasiAnggaran + p.switchingAnggaran;
-                
-                // Alokasi Proporsional: Alokasi FY / 12 * bulan berjalan
+                let alokasiSetelahSwitching = Number(p.alokasiAnggaran) + Number(p.switchingAnggaran);
                 let alokasiProporsional = (alokasiSetelahSwitching / 12) * fBulan;
 
-                // Akumulasi Realisasi s.d Bulan Laporan
                 let totalRealisasiYTD = 0;
                 for(let b=1; b<=fBulan; b++) {
-                    totalRealisasiYTD += (p.realisasiBulanan[b] || 0);
+                    totalRealisasiYTD += Number(p.realisasiBulanan[b] || 0);
                 }
 
-                // Hitung Agregasi Nasional & Chart
                 totalNasionalAlokasi += alokasiSetelahSwitching;
                 totalNasionalRealisasi += totalRealisasiYTD;
-                wilayahChartMap[p.wilayah].alokasi += alokasiSetelahSwitching;
-                wilayahChartMap[p.wilayah].realisasi += totalRealisasiYTD;
+                
+                if(wilayahChartMap[p.wilayah]) {
+                    wilayahChartMap[p.wilayah].alokasi += alokasiSetelahSwitching;
+                    wilayahChartMap[p.wilayah].realisasi += totalRealisasiYTD;
+                }
 
                 let row = document.createElement('tr');
                 row.innerHTML = `
@@ -581,7 +597,6 @@
                 tbody.appendChild(row);
             });
 
-            // Update Scorecards
             document.getElementById('tot-alokasi').innerText = formatRp(totalNasionalAlokasi);
             document.getElementById('tot-realisasi').innerText = formatRp(totalNasionalRealisasi);
             let persen = totalNasionalAlokasi > 0 ? (totalNasionalRealisasi / totalNasionalAlokasi) * 100 : 0;
@@ -591,7 +606,6 @@
             updateRankingAndChart(wilayahChartMap);
         }
 
-        // Fungsi Sortir Dinamis Tabel untuk Semua Header
         function sortTable(colIndex) {
             sortDirections[colIndex] = !sortDirections[colIndex];
             let direction = sortDirections[colIndex] ? 1 : -1;
@@ -600,19 +614,18 @@
                 let valA, valB;
                 const fBulan = parseInt(document.getElementById('filter-bulan').value);
 
-                // Mapping nilai berdasarkan indeks kolom
                 switch(colIndex) {
                     case 0: valA = a.wilayah; valB = b.wilayah; break;
                     case 1: valA = a.mataAnggaran; valB = b.mataAnggaran; break;
                     case 2: valA = a.namaProject; valB = b.namaProject; break;
-                    case 3: valA = a.estimasiNilai; valB = b.estimasiNilai; break;
-                    case 4: valA = a.alokasiAnggaran; valB = b.alokasiAnggaran; break;
-                    case 5: valA = a.switchingAnggaran; valB = b.switchingAnggaran; break;
-                    case 6: valA = (a.alokasiAnggaran + a.switchingAnggaran); valB = (b.alokasiAnggaran + b.switchingAnggaran); break;
-                    case 7: valA = (a.alokasiAnggaran + a.switchingAnggaran) / 12 * fBulan; valB = (b.alokasiAnggaran + b.switchingAnggaran) / 12 * fBulan; break;
+                    case 3: valA = Number(a.estimasiNilai); valB = Number(b.estimasiNilai); break;
+                    case 4: valA = Number(a.alokasiAnggaran); valB = Number(b.alokasiAnggaran); break;
+                    case 5: valA = Number(a.switchingAnggaran); valB = Number(b.switchingAnggaran); break;
+                    case 6: valA = (Number(a.alokasiAnggaran) + Number(a.switchingAnggaran)); valB = (Number(b.alokasiAnggaran) + Number(b.switchingAnggaran)); break;
+                    case 7: valA = (Number(a.alokasiAnggaran) + Number(a.switchingAnggaran)) / 12 * fBulan; valB = (Number(b.alokasiAnggaran) + Number(b.switchingAnggaran)) / 12 * fBulan; break;
                     case 8: 
                         valA = 0; valB = 0;
-                        for(let b=1; b<=fBulan; b++) { valA += (a.realisasiBulanan[b] || 0); valB += (b.realisasiBulanan[b] || 0); }
+                        for(let b=1; b<=fBulan; b++) { valA += Number(a.realisasiBulanan[b] || 0); valB += Number(b.realisasiBulanan[b] || 0); }
                         break;
                     default: return 0;
                 }
@@ -635,10 +648,8 @@
                 rankData.push({ name: w, persen: pct });
             }
 
-            // Urutkan Penyerapan Tertinggi
             rankData.sort((a, b) => b.persen - a.persen);
 
-            // Render List Ranking Top 5
             const rList = document.getElementById('ranking-wilayah-list');
             rList.innerHTML = "";
             rankData.slice(0, 5).forEach((item, idx) => {
@@ -650,7 +661,6 @@
                 `;
             });
 
-            // Update Grafik Batang
             let chartLabels = rankData.slice(0, 6).map(item => item.name.split(" ")[1] || item.name);
             let chartValues = rankData.slice(0, 6).map(item => item.persen.toFixed(1));
 
@@ -675,7 +685,8 @@
             });
         }
 
-        function handleUpdate(e) {
+        // SIMPAN REALISASI BARU KE DATABASE (POST)
+        async function handleUpdate(e) {
             e.preventDefault();
             let pId = parseInt(document.getElementById('update-project-idx').value);
             let bln = parseInt(document.getElementById('update-bulan').value);
@@ -683,14 +694,43 @@
 
             let proj = projectData.find(p => p.id === pId);
             if(proj) {
-                proj.realisasiBulanan[bln] = (proj.realisasiBulanan[bln] || 0) + nom;
-                alert(`Berhasil menambahkan realisasi pada bulan ke-${bln} senilai ${formatRp(nom)} untuk proyek: ${proj.namaProject}`);
-                refreshAll();
-                switchView('dashboard');
+                toggleLoading(true);
+                
+                // Struktur payload data yang dikirim ke API
+                const payload = {
+                    action: "updateRealisasi",
+                    projectId: pId,
+                    bulan: bln,
+                    nominal: nom
+                };
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if(result.status === "success") {
+                        // Perbarui state di sisi client lokal
+                        proj.realisasiBulanan[bln] = (Number(proj.realisasiBulanan[bln]) || 0) + nom;
+                        alert(`Berhasil! Data tersinkronisasi ke Cloud.\nTambahan realisasi bulan ke-${bln} senilai ${formatRp(nom)} untuk proyek: ${proj.namaProject}`);
+                        refreshAll();
+                        switchView('dashboard');
+                    } else {
+                        alert("Gagal memperbarui database: " + result.message);
+                    }
+                } catch (error) {
+                    console.error("Error POST Data:", error);
+                    alert("Gagal terhubung ke server database. Silakan coba lagi.");
+                } finally {
+                    toggleLoading(false);
+                }
             }
         }
 
-        function handleSwitching(e) {
+        // SIMPAN PERGESERAN ANGGARAN (SWITCHING) KE DATABASE (POST)
+        async function handleSwitching(e) {
             e.preventDefault();
             let asalId = parseInt(document.getElementById('switch-asal').value);
             let tujuanId = parseInt(document.getElementById('switch-tujuan').value);
@@ -704,24 +744,60 @@
             let pAsal = projectData.find(p => p.id === asalId);
             let pTujuan = projectData.find(p => p.id === tujuanId);
 
-            if(pAsal.alokasiAnggaran + pAsal.switchingAnggaran < nominal) {
+            if((Number(pAsal.alokasiAnggaran) + Number(pAsal.switchingAnggaran)) < nominal) {
                 alert("Gagal: Anggaran pada project sumber tidak mencukupi!");
                 return;
             }
 
-            pAsal.switchingAnggaran -= nominal;
-            pTujuan.switchingAnggaran += nominal;
+            toggleLoading(true);
 
-            alert(`Switching Berhasil!\nDana sebesar ${formatRp(nominal)} digeser dari proyek [${pAsal.namaProject}] ke [${pTujuan.namaProject}]`);
-            refreshAll();
-            switchView('dashboard');
+            const payload = {
+                action: "switchingAnggaran",
+                asalId: asalId,
+                tujuanId: tujuanId,
+                nominal: nominal
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if(result.status === "success") {
+                    pAsal.switchingAnggaran -= nominal;
+                    pTujuan.switchingAnggaran += nominal;
+
+                    alert(`Switching Berhasil & Tersinkronisasi!\nDana sebesar ${formatRp(nominal)} digeser dari proyek [${pAsal.namaProject}] ke [${pTujuan.namaProject}]`);
+                    refreshAll();
+                    switchView('dashboard');
+                } else {
+                    alert("Gagal memproses switching di database: " + result.message);
+                }
+            } catch (error) {
+                console.error("Error POST Switching:", error);
+                alert("Gagal menghubungi server database.");
+            } finally {
+                toggleLoading(false);
+            }
         }
 
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('nav ul li').forEach(li => li.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            
+            // Mengatasi error jika pemanggilan switchView tidak dipicu langsung dari event click li
+            if(window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            } else {
+                // Fallback pencarian manual menu list
+                const menus = document.querySelectorAll('nav ul li');
+                if(viewId === 'dashboard') menus[0].classList.add('active');
+                if(viewId === 'update-wilayah') menus[1].classList.add('active');
+                if(viewId === 'switching-anggaran') menus[2].classList.add('active');
+            }
         }
 
         function ekporLaporan() {

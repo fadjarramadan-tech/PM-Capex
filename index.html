@@ -251,15 +251,15 @@
         let appData = {
             alokasi: {},
             realisasi: {},
-            asetCount: {}, // Simulasi hitungan aset sesuai dashboard visual Anda
+            projectCount: {}, // Simulasi hitungan aset sesuai dashboard visual Anda
             switchingLogs: []
         };
 
         // Seed data presisi agar grafik EWS menyala dinamis sesuai gambar
         function initBaseData() {
             wilayahList.forEach((w, index) => {
-                // Generate jumlah aset tiruan agar bervariasi (e.g. 14 aset, 50 aset, dll)
-                appData.asetCount[w] = [14, 15, 3, 38, 18, 50, 30, 13, 64, 46, 42, 63, 3, 5, 15, 26, 22][index % 17];
+                // Generate jumlah project tiruan agar bervariasi (e.g. 14 aset, 50 aset, dll)
+                appData.projectCount[w] = [14, 15, 3, 38, 18, 50, 30, 13, 64, 46, 42, 63, 3, 5, 15, 26, 22][index % 17];
                 
                 mataAnggaranList.forEach((m, idx) => {
                     const key = `${w}__${m}`;
@@ -363,7 +363,7 @@
                         <div>
                             <div class="flex justify-between items-start mb-1.5">
                                 <h4 class="text-xs font-bold text-slate-800 truncate pr-2" title="${w}">${w}</h4>
-                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${appData.asetCount[w]} Aset</span>
+                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${appData.projectCount[w]} project</span>
                             </div>
                             <div class="text-sm font-black text-slate-700 mb-3">${formatIDR(wilayahRealisasi)}</div>
                         </div>

@@ -247,13 +247,13 @@
 
         const mataAnggaranList = ["Tanah", "Bangunan", "Perbotan Non Otomasi", "Kendaraan"];
 
-        // State Data
-        let appData = {
-            alokasi: {},
-            realisasi: {},
-            projectCount: {}, // Simulasi hitungan aset sesuai dashboard visual Anda
-            switchingLogs: []
-        };
+        // State Management Global - PASTIKAN asetCount ADA DI SINI
+let appData = {
+    alokasi: {},
+    realisasi: {},
+    asetCount: {}, // <-- Pastikan baris ini ada dan tidak terhapus
+    switchingLogs: []
+};
 
         // Seed data presisi agar grafik EWS menyala dinamis sesuai gambar
         function initBaseData() {
@@ -363,7 +363,7 @@
                         <div>
                             <div class="flex justify-between items-start mb-1.5">
                                 <h4 class="text-xs font-bold text-slate-800 truncate pr-2" title="${w}">${w}</h4>
-                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${appData.projectCount[w]} project</span>
+                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${appData.asetCount[w]} project</span>
                             </div>
                             <div class="text-sm font-black text-slate-700 mb-3">${formatIDR(wilayahRealisasi)}</div>
                         </div>
@@ -551,21 +551,21 @@
         }
 
         window.onload = function() {
-            initBaseData();
-            
-            const fillFilter = document.getElementById('select-filter-wilayah');
-            const fW = document.getElementById('switch-from-wilayah');
-            const tW = document.getElementById('switch-to-wilayah');
+            function initBaseData() {
+    // Reset state agar bersih sebelum menerima pasokan data dari API Sheets
+    appData.alokasi = {};
+    appData.realisasi = {};
+    appData.asetCount = {}; // Mencegah error 'undefined' saat looping wilayah
 
-            wilayahList.forEach(w => {
-                fillFilter.innerHTML += `<option value="${w}">${w}</option>`;
-                fW.innerHTML += `<option value="${w}">${w}</option>`;
-                tW.innerHTML += `<option value="${w}">${w}</option>`;
-            });
-
-            fetchExternalData();
-            lucide.createIcons();
-        };
+    wilayahList.forEach(w => {
+        appData.asetCount[w] = 0; // Sekarang baris ini aman dari error
+        mataAnggaranList.forEach(m => {
+            const key = `${w}__${m}`;
+            appData.alokasi[key] = 0;
+            appData.realisasi[key] = 0;
+        });
+    });
+};
     </script>
 </body>
 </html>

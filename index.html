@@ -87,6 +87,7 @@
             </div>
             <div id="card-workspace-status" class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-amber-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Persentase Serapan Agregat</div>
+                <div class="text-2xl font-black text-slate-800" id="sum-text-sisa" style="display:none;">Rp 0</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-ews-text">0%</div>
                 <div class="text-[11px] text-slate-400 mt-1" id="sum-ews-desc">Formula: (Realisasi / Alokasi) x 100</div>
             </div>
@@ -145,27 +146,27 @@
                     </div>
                 </div>
 
-                <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center z-10">
                         <h3 class="font-bold text-sm text-bni-teal uppercase tracking-wide flex items-center gap-2">
                             <i data-lucide="layers" class="w-4 h-4 text-amber-500"></i> Breakdown Detail Project Aktif
                         </h3>
                         <span id="project-count-badge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2 py-0.5 rounded-full">0 Proyek</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                                    <th class="p-3 font-bold">ID & Nama Project</th>
-                                    <th class="p-3 font-bold">Mata Anggaran</th>
-                                    <th class="p-3 font-bold text-right">Estimasi Awal (Rp)</th>
-                                    <th class="p-3 font-bold text-right">Alokasi Akhir (Rp)</th>
-                                    <th class="p-3 font-bold text-right">Realisasi YTD (Rp)</th>
-                                    <th class="p-3 font-bold text-center">Progress</th>
-                                    <th class="p-3 font-bold text-center">Milestone</th>
+                    <div class="overflow-auto max-h-[520px] w-full relative">
+                        <table class="w-full text-left text-xs table-auto">
+                            <thead class="sticky top-0 bg-slate-100 text-slate-600 shadow-sm z-20">
+                                <tr class="border-b border-slate-200">
+                                    <th class="p-3 font-bold bg-slate-100">ID & Nama Project</th>
+                                    <th class="p-3 font-bold bg-slate-100">Mata Anggaran</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Estimasi Awal (Rp)</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Alokasi Akhir (Rp)</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Realisasi YTD (Rp)</th>
+                                    <th class="p-3 font-bold text-center bg-slate-100">Progress</th>
+                                    <th class="p-3 font-bold text-center bg-slate-100">Milestone</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbody-project-list" class="divide-y divide-slate-100"></tbody>
+                            <tbody id="tbody-project-list" class="divide-y divide-slate-100 bg-white"></tbody>
                         </table>
                     </div>
                 </div>
@@ -269,7 +270,7 @@
 
     <script>
         const wilayahList = [
-            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palmebang)", 
+            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palembang)", 
             "Wilayah 04 (Bandung)", "Wilayah 05 (Semarang)", "Wilayah 06 (Surabaya)", 
             "Wilayah 07 (Makassar)", "Wilayah 08 (Denpasar)", "Wilayah 09 (Banjarmasin)", 
             "Wilayah 10 (Jakarta Kemayoran)", "Wilayah 11 (Manado)", "Wilayah 12 (Jakarta Kota)", 
@@ -333,7 +334,6 @@
             return 'Rp ' + Math.round(val).toLocaleString('id-ID');
         }
 
-        // PERBAIKAN SINKRONISASI SWITCH TAB (Tab Bisa Dibuka Dengan Aman)
         function switchTab(event, tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
@@ -345,7 +345,6 @@
             event.currentTarget.classList.add('bg-slate-100', 'text-bni-teal', 'border-b-2', 'border-bni-teal');
             event.currentTarget.classList.remove('text-slate-500');
 
-            // Eksekusi render HANYA jika tab yang bersangkutan aktif di-klik pimpinan
             if (tabId === 'tab-wilayah') {
                 renderWilayahDetails();
             } else if (tabId === 'tab-timeline') {
@@ -353,11 +352,8 @@
             }
         }
 
-        // Pengendali filter droplist atas yang aman dari pemicu loop berantai
         function onGlobalFilterChange() {
-            processDataAndRender(); // Update Scorecard atas & Card depan
-            
-            // Perbarui Tab 2 hanya jika pengguna memang sedang aktif membuka Tab 2
+            processDataAndRender(); 
             const tabWilayahIsActive = !document.getElementById('tab-wilayah').classList.contains('hidden');
             if (tabWilayahIsActive) {
                 renderWilayahDetails();
@@ -421,7 +417,7 @@
                         </div>
                         <div class="mt-auto space-y-2">
                             <div class="flex justify-between items-center text-[11px] text-slate-400">
-                                <span>Konfirmasi Realisasi</span>
+                                <span>Progress Realisasi</span>
                                 <span class="font-bold text-slate-700">${pct.toFixed(0)}%</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -439,7 +435,7 @@
             document.getElementById('sum-realisasi').innerText = formatIDR(grandRealisasi);
             
             const ewsGlobalCard = document.getElementById('card-workspace-status');
-            const ewsGlobalText = document.getElementById('sum-ews-text');
+            const ewsGlobalText = document.getElementById('sum-text-sisa' || 'sum-ews-text');
             const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
 
             const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
@@ -459,12 +455,12 @@
                 }
             }
 
-            document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
+            const sisaEl = document.getElementById('sum-sisa');
+            if(sisaEl) sisaEl.innerText = formatIDR(grandAlokasi - grandRealisasi);
             
-            // DISINKRONKAN: Pemanggilan balik renderWilayahDetails() dari sini dihapus permanen agar tidak freeze!
+            renderTimelineView();
         }
 
-        // OPTIMASI TOTAL: Menggunakan metode Pengumpul String agar proses klik/cari berjalan sangat cepat
         function renderWilayahDetails() {
             const selectEl = document.getElementById('select-filter-wilayah');
             const currentW = selectEl ? selectEl.value : "ALL";
@@ -480,7 +476,6 @@
                 return matchWilayah && matchMata && matchSearch;
             });
 
-            // 1. Gambar Ringkasan Sektor Kiri
             const tbodyMata = document.getElementById('tbody-detail-wilayah');
             if(tbodyMata) {
                 let mataHtml = ""; 
@@ -521,7 +516,6 @@
                 tbodyMata.innerHTML = mataHtml; 
             }
 
-            // 2. Gambar Breakdown Project Sektor Kanan (Kecepatan Instan)
             const tbodyProject = document.getElementById('tbody-project-list');
             if(tbodyProject) {
                 const badgeEl = document.getElementById('project-count-badge');

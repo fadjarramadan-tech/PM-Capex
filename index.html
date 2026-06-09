@@ -466,101 +466,43 @@
         }
 
         function renderWilayahDetails() {
-            const selectEl = document.getElementById('select-filter-wilayah');
-            const currentW = selectEl ? selectEl.value : "ALL";
-            const filterMata = document.getElementById('global-mata-anggaran').value;
-            
-            const searchInput = document.getElementById('search-project-name');
-            const searchKeyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
-            
-            const filteredProjects = appData.rawProjects.filter(p => {
-                const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
-                const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
-                const matchSearch = (p.nama.toLowerCase().includes(searchKeyword) || p.id.toLowerCase().includes(searchKeyword));
-                return matchWilayah && matchMata && matchSearch;
-            });
+    ...
+    const tbodyProject = document.getElementById('tbody-project-list');
+    if(!tbodyProject) return;
 
-            const tbodyMata = document.getElementById('tbody-detail-wilayah');
-            if(tbodyMata) {
-                tbodyMata.innerHTML = '';
-                let targetText = (pct) => pct >= 75 ? `<span class="text-emerald-600 font-bold">● Hijau</span>` : pct >= 40 ? `<span class="text-amber-500 font-bold">● Kuning</span>` : `<span class="text-rose-600 font-bold">● Merah</span>`;
+    if(filteredProjects.length === 0) {
+        tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project.</td></tr>`;
+        return;
+    }
 
-                mataAnggaranList.forEach(m => {
-                    let countMataProjects = 0;
-                    let alokasiMata = 0;
-                    let realisasiMata = 0;
+    // 1. Buat sebuah wadah string kosong (Accumulator)
+    let htmlContent = "";
 
-                    appData.rawProjects.forEach(p => {
-                        const matchWil = (currentW === "ALL" || p.wilayah === currentW);
-                        if (matchWil && p.mataAnggaran === m) {
-                            countMataProjects++;
-                            alokasiMata += p.alokasi || 0;
-                            realisasiMata += p.realisasi || 0;
-                        }
-                    });
+    // 2. Lakukan looping, tetapi JANGAN langsung tembak ke innerHTML
+    filteredProjects.forEach(p => {
+        const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
+        let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
 
-                    if(countMataProjects === 0 && currentW !== "ALL") {
-                        const key = `${currentW}__${m}`;
-                        alokasiMata = appData.alokasi[key] || 0;
-                        realisasiMata = appData.realisasi[key] || 0;
-                    }
+        // Tampung baris HTML ke dalam variabel string
+        htmlContent += `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
+                <td class="p-3">
+                    <div class="text-xs font-mono text-cyan-700 font-bold">${p.id}</div>
+                    <div class="text-xs font-bold text-slate-800">${p.nama}</div>
+                </td>
+                <td class="p-3">${p.mataAnggaran}</td>
+                <td class="p-3 text-right">${formatIDR(p.estimasiAwal || 0)}</td>
+                <td class="p-3 text-right">${formatIDR(p.alokasi)}</td>
+                <td class="p-3 text-right">${formatIDR(p.realisasi)}</td>
+                <td class="p-3 text-center">${pPct.toFixed(0)}%</td>
+                <td class="p-3 text-center">${p.milestone}</td>
+            </tr>
+        `;
+    });
 
-                    const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
-
-                    tbodyMata.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="p-3 font-semibold text-slate-700">${m}</td>
-                            <td class="p-3 text-slate-600 font-bold">${countMataProjects} Proyek</td>
-                            <td class="p-3">${formatIDR(alokasiMata)}</td>
-                            <td class="p-3 font-medium text-slate-800">${formatIDR(realisasiMata)}</td>
-                            <td class="p-3 text-[11px]">${targetText(pctMata)}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            const tbodyProject = document.getElementById('tbody-project-list');
-            if(tbodyProject) {
-                tbodyProject.innerHTML = '';
-                const badgeEl = document.getElementById('project-count-badge');
-                if(badgeEl) badgeEl.innerText = `${filteredProjects.length} Proyek`;
-
-                if(filteredProjects.length === 0) {
-                    tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
-                    return;
-                }
-
-                filteredProjects.forEach(p => {
-                    const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
-                    let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
-
-                    tbodyProject.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
-                            <td class="p-3">
-                                <div class="text-xs font-mono text-cyan-700 font-bold">${p.id}</div>
-                                <div class="text-xs font-bold text-slate-800">${p.nama}</div>
-                                ${currentW === "ALL" ? `<div class="text-[10px] text-slate-400 font-medium">${p.wilayah}</div>` : ''}
-                            </td>
-                            <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
-                            <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
-                            <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
-                            <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(p.realisasi)}</td>
-                            <td class="p-3">
-                                <div class="flex flex-col items-center gap-1 min-w-[70px]">
-                                    <span class="font-extrabold text-[11px]">${pPct.toFixed(0)}%</span>
-                                    <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                        <div class="h-full ${barColor}" style="width: ${Math.min(pPct, 100)}%"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-3 text-center">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">${p.milestone || 'Tahap Konstruksi'}</span>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-        }
+    // 3. SETELAH LOOPING SELESAI, masukkan string gabungan sekaligus ke DOM (Hanya 1x proses render)
+    tbodyProject.innerHTML = htmlContent; 
+}
 
         function executeSwitching() {
             const fW = document.getElementById('switch-from-wilayah').value;

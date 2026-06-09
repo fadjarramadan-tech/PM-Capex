@@ -53,7 +53,7 @@
     <div class="container mx-auto p-5 max-w-[1600px]">
         
         <div class="flex bg-white p-2 rounded-t-xl border-b border-slate-200 gap-2 overflow-x-auto">
-            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard</button>
+            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard & Gabungan</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-switching')">Mekanisme Switching Anggaran</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
@@ -77,9 +77,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi CAPEX</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Pagu</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-alokasi">Rp 0</div>
-                <div class="text-[11px] text-slate-400 mt-1">Anggaran Maksimal Wil-Cab</div>
+                <div class="text-[11px] text-slate-400 mt-1">Plavon anggaran induk gabungan</div>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-emerald-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Realisasi YTD</div>
@@ -123,7 +123,7 @@
                 <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-rose-700 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
-                        Top 5 Project Urgent (Alokasi Besar - Penyerapan Terendah)
+                        Top 5 Project Urgent (Alokasi Besar - Penyerapan Kritis Terendah)
                     </h3>
                     <span class="bg-rose-50 text-rose-700 font-bold text-[11px] px-2 py-0.5 rounded border border-rose-100">Atensi Direktur Sektor</span>
                 </div>
@@ -192,16 +192,16 @@
                         <span id="project-count-badge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2 py-0.5 rounded-full">0 Proyek</span>
                     </div>
                     <div class="overflow-auto max-h-[520px] w-full relative">
-                        <table class="w-full text-left text-xs table-auto">
+                        <table class="w-full text-left text-xs table-auto min-w-[900px]">
                             <thead class="sticky top-0 bg-slate-100 text-slate-600 shadow-sm z-20">
                                 <tr class="border-b border-slate-200">
-                                    <th class="p-3 font-bold bg-slate-100">ID & Nama Project</th>
+                                    <th class="p-3 font-bold bg-slate-100" style="width: 25%;">ID & Nama Project</th>
                                     <th class="p-3 font-bold bg-slate-100">Mata Anggaran</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Estimasi Awal (Rp)</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Estimasi (Rp)</th>
                                     <th class="p-3 font-bold text-right bg-slate-100">Alokasi Akhir (Rp)</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Realisasi YTD (Rp)</th>
-                                    <th class="p-3 font-bold text-center bg-slate-100">Progress</th>
-                                    <th class="p-3 font-bold text-center bg-slate-100">Milestone</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100" style="width: 15%;">Realisasi Input (Rp)</th>
+                                    <th class="p-3 font-bold bg-slate-100" style="width: 20%;">Milestone Stage Dropdown</th>
+                                    <th class="p-3 font-bold text-center bg-slate-100">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-project-list" class="divide-y divide-slate-100 bg-white"></tbody>
@@ -318,6 +318,17 @@
 
         const mataAnggaranList = ["Tanah", "Bangunan", "Perbotan Non Otomasi", "Kendaraan"];
 
+        // FITUR BARU: Definisi Isi Opsi Droplist Milestone Berdasarkan Aturan Kategori Pos Anggaran
+        const milestoneOptionsGroupA = [
+            "Izin Prinsip", "Pengadaan Konsultan Perencana", "Pengadaan Kontraktor Pelaksana",
+            "Penetapan, Pemenang & Kontrak", "Mobilisasi & Mulai Konstruksi", "Progres Fisik 50%",
+            "Progres Fisik 80%", "Penyelesaian Konstruksi & BAST", "Pembayaran Final & Pencatatan Aset"
+        ];
+        
+        const milestoneOptionsGroupB = [
+            "Izin Prinsip", "Proses Pengadaan", "Pengiriman", "Instalasi", "BAST", "Pembayaran Final & Pencatatan Aset"
+        ];
+
         let appData = {
             alokasi: {},
             realisasi: {},
@@ -418,7 +429,6 @@
                     const alokasiVal = appData.alokasi[key] || 0;
                     const realisasiVal = appData.realisasi[key] || 0;
 
-                    // Catat realisasi pos anggaran untuk visualisasi Stacked Bar
                     breakdownMata[m] = realisasiVal;
 
                     if (filterMata === 'ALL' || filterMata === m) {
@@ -431,7 +441,6 @@
                 grandAlokasi += wilayahAlokasi;
                 grandRealisasi += wilayahRealisasi;
 
-                // Tampung objek data untuk diolah grafik stacked horizontal
                 chartRawData.push({
                     wilayahLabel: w.split(' ')[0] + ' ' + (w.split(' ')[1] || ''),
                     totalRealisasi: wilayahRealisasi,
@@ -472,7 +481,7 @@
                         </div>
                         <div class="mt-auto space-y-2">
                             <div class="flex justify-between items-center text-[11px] text-slate-400">
-                                <span>Progress Serapan</span>
+                                <span>Konfirmasi Serapan</span>
                                 <span class="font-bold text-slate-700">${pct.toFixed(0)}%</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -513,16 +522,12 @@
             const sisaEl = document.getElementById('sum-sisa');
             if(sisaEl) sisaEl.innerText = formatIDR(grandAlokasi - grandRealisasi);
             
-            // Panggil fungsi render baru Stacked Bar Horizontal
             renderStackedHorizontalChart(chartRawData);
             renderTopUrgentProjects();
         }
 
-        // FITUR UTAMA: Merender Stacked Bar Chart Horizontal Terurut Serapan Tertinggi
         function renderStackedHorizontalChart(chartRawData) {
-            // Urutkan data dari total realisasi tertinggi ke terendah (Peringkat Atas)
             chartRawData.sort((a, b) => b.totalRealisasi - a.totalRealisasi);
-
             const ctx = document.getElementById('chart-ranking-wilayah');
             if (!ctx) return;
 
@@ -530,10 +535,7 @@
                 globalRankingChartInstance.destroy();
             }
 
-            // Ekstrak label wilayah hasil pengurutan tertinggi
             const sortedLabels = chartRawData.map(item => item.wilayahLabel);
-
-            // Petakan realisasi masing-masing komponen mata anggaran secara urut
             const dataTanah = chartRawData.map(item => item.breakdown["Tanah"]);
             const dataBangunan = chartRawData.map(item => item.breakdown["Bangunan"]);
             const dataPerbotan = chartRawData.map(item => item.breakdown["Perbotan Non Otomasi"]);
@@ -551,40 +553,16 @@
                     ]
                 },
                 options: {
-                    indexAxis: 'y', // MERUBAH GRAFIK MENJADI HORIZONTAL
+                    indexAxis: 'y', 
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: { boxWidth: 12, font: { size: 10 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${context.dataset.label}: ${formatIDR(context.raw)}`;
-                                }
-                            }
-                        }
+                        legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 10 } } },
+                        tooltip: { callbacks: { label: function(context) { return ` ${context.dataset.label}: ${formatIDR(context.raw)}`; } } }
                     },
                     scales: {
-                        x: {
-                            stacked: true, // MENGAKTIFKAN FORMAT TUMPUK (STACKED)
-                            grid: { color: '#F1F5F9' },
-                            ticks: {
-                                callback: function(value) {
-                                    if (value >= 1e9) return 'Rp ' + (value / 1e9).toFixed(1) + ' M';
-                                    return 'Rp ' + (value / 1e6).toFixed(0) + ' Jt';
-                                },
-                                font: { size: 9 }
-                            }
-                        },
-                        y: {
-                            stacked: true, // MENGAKTIFKAN FORMAT TUMPUK (STACKED)
-                            grid: { display: false },
-                            ticks: { font: { size: 10, weight: 'bold' } }
-                        }
+                        x: { stacked: true, grid: { color: '#F1F5F9' }, ticks: { font: { size: 9 } } },
+                        y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
                     }
                 }
             });
@@ -601,7 +579,6 @@
             }
 
             let sortedProjects = [...appData.rawProjects].filter(p => p.alokasi > 0);
-
             sortedProjects.sort((a, b) => {
                 const pctA = (a.realisasi / a.alokasi) * 100;
                 const pctB = (b.realisasi / b.alokasi) * 100;
@@ -644,6 +621,7 @@
             tbodyUrgent.innerHTML = urgentHtml;
         }
 
+        // RE-DESIGN UTAMA TAB 2: INJECT INPUT FORM REALISASI & DROPLIST KONDISIONAL MILESTONE
         function renderWilayahDetails() {
             const selectEl = document.getElementById('select-filter-wilayah');
             const currentW = selectEl ? selectEl.value : "ALL";
@@ -701,7 +679,6 @@
 
             const tbodyProject = document.getElementById('tbody-project-list');
             if(tbodyProject) {
-                tbodyProject.innerHTML = '';
                 const badgeEl = document.getElementById('project-count-badge');
                 if(badgeEl) badgeEl.innerText = `${filteredProjects.length} Proyek`;
 
@@ -713,8 +690,14 @@
                 let projectHtml = ""; 
 
                 filteredProjects.forEach(p => {
-                    const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
-                    let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
+                    // Penentuan Opsi Dropdown secara dinamis berdasarkan aturan jenis Mata Anggaran
+                    let selectedGroup = (p.mataAnggaran === "Tanah" || p.mataAnggaran === "Bangunan") ? milestoneOptionsGroupA : milestoneOptionsGroupB;
+                    
+                    let selectOptionsHtml = "";
+                    selectedGroup.forEach(opt => {
+                        let isSelected = (p.milestone && p.milestone.trim() === opt.trim()) ? "selected" : "";
+                        selectOptionsHtml += `<option value="${opt}" ${isSelected}>${opt}</option>`;
+                    });
 
                     projectHtml += `
                         <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
@@ -726,22 +709,96 @@
                             <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
                             <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
                             <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
-                            <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(p.realisasi)}</td>
-                            <td class="p-3">
-                                <div class="flex flex-col items-center gap-1 min-w-[70px]">
-                                    <span class="font-extrabold text-[11px]">${pPct.toFixed(0)}%</span>
-                                    <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                        <div class="h-full ${barColor}" style="width: ${Math.min(pPct, 100)}%"></div>
-                                    </div>
-                                </div>
+                            
+                            <td class="p-2">
+                                <input type="number" id="input-realisasi-${p.id}" value="${p.realisasi}" class="w-full border border-slate-200 rounded p-1 text-xs font-bold text-emerald-800 bg-slate-50 focus:bg-white outline-none">
                             </td>
-                            <td class="p-3 text-center">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">${p.milestone || 'Tahap Konstruksi'}</span>
+                            
+                            <td class="p-2">
+                                <select id="select-milestone-${p.id}" class="w-full border border-slate-200 rounded p-1 text-[11px] bg-slate-50 focus:bg-white outline-none font-medium text-slate-700">
+                                    ${selectOptionsHtml}
+                                </select>
+                            </td>
+                            
+                            <td class="p-2 text-center">
+                                <button id="btn-update-${p.id}" onclick="updateProjectDatabase('${p.id}')" class="bg-bni-teal hover:bg-cyan-800 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto shadow-sm transition">
+                                    <i data-lucide="save" class="w-3 h-3"></i> Simpan
+                                </button>
                             </td>
                         </tr>
                     `;
                 });
                 tbodyProject.innerHTML = projectHtml; 
+                lucide.createIcons(); // Re-render ikon save di dalam tabel
+            }
+        }
+
+        // FITUR UTAMA 2: Mengirimkan hasil update via AJAX POST ke API Google Apps Script Live
+        async function updateProjectDatabase(projectId) {
+            const btn = document.getElementById(`btn-update-${projectId}`);
+            const inputReal = document.getElementById(`input-realisasi-${projectId}`);
+            const selectMile = document.getElementById(`select-milestone-${projectId}`);
+            
+            if(!inputReal || !selectMile) return;
+            
+            const realisasiVal = parseFloat(inputReal.value);
+            const milestoneVal = selectMile.value;
+
+            if (isNaN(realisasiVal) || realisasiVal < 0) {
+                alert("Masukkan nominal nilai realisasi anggaran yang valid.");
+                return;
+            }
+
+            // Ubah tombol menjadi mode loading
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.className = "bg-slate-400 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto cursor-not-allowed";
+            btn.innerHTML = `<span>Proses...</span>`;
+
+            try {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbyqyvXh2jclWVZE4STJ8G0c_M8agRnR8lk-WS1zCwXRkhQ6lthOjv_9VgA0QgIMkRn1nA/exec', {
+                    method: 'POST',
+                    mode: 'no-cors', // Apps Script Web App memerlukan no-cors jika tidak di-handle khusus redirect-nya
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: projectId,
+                        realisasi: realisasiVal,
+                        milestone: milestoneVal
+                    })
+                });
+
+                // Update data secara lokal agar dashboard ikut berubah seketika tanpa perlu hard-refresh page
+                const projectIndex = appData.rawProjects.findIndex(p => p.id === projectId);
+                if (projectIndex !== -1) {
+                    appData.rawProjects[projectIndex].realisasi = realisasiVal;
+                    appData.rawProjects[projectIndex].milestone = milestoneVal;
+                    
+                    // Hitung ulang akumulasi nilai level wilayah objek penampung induk
+                    const p = appData.rawProjects[projectIndex];
+                    const key = `${p.wilayah}__${p.mataAnggaran}`;
+                    
+                    // Rekalkulasi total gabungan running data lokal
+                    let newWilayahRealisasiSum = 0;
+                    appData.rawProjects.forEach(item => {
+                        if(`${item.wilayah}__${item.mataAnggaran}` === key) {
+                            newWilayahRealisasiSum += item.realisasi;
+                        }
+                    });
+                    appData.realisasi[key] = newWilayahRealisasiSum;
+                }
+
+                showToast(`Project ${projectId} berhasil disimpan ke Google Sheets!`);
+                processDataAndRender(); // Re-render scorecard atas & barchart agar ikut sinkron bergerak
+                
+            } catch (error) {
+                console.error("Gagal mengirim update data:", error);
+                alert("Koneksi API bermasalah, gagal menyimpan data.");
+            } finally {
+                // Kembalikan tombol ke kondisi semula
+                btn.disabled = false;
+                btn.className = "bg-bni-teal hover:bg-cyan-800 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto shadow-sm transition";
+                btn.innerHTML = originalText;
+                lucide.createIcons();
             }
         }
 

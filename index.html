@@ -52,10 +52,10 @@
     <div class="container mx-auto p-5 max-w-[1600px]">
         
         <div class="flex bg-white p-2 rounded-t-xl border-b border-slate-200 gap-2 overflow-x-auto">
-            <button id="btn-tab-dashboard" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard & Gabungan</button>
-            <button id="btn-tab-wilayah" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
-            <button id="btn-tab-switching" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-switching')">Mekanisme Switching Anggaran</button>
-            <button id="btn-tab-timeline" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
+            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard & Gabungan</button>
+            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
+            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-switching')">Mekanisme Switching Anggaran</button>
+            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
         </div>
 
         <div class="bg-white p-4 rounded-b-xl shadow-sm border-x border-b border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
@@ -326,7 +326,6 @@
                 apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
                 apiStatusEl.innerText = "Mode Data Simulasi Aktif";
             }
-            // Render halaman awal (Tab 1) secara aman
             processDataAndRender();
         }
 
@@ -334,123 +333,31 @@
             return 'Rp ' + Math.round(val).toLocaleString('id-ID');
         }
 
-        function processDataAndRender() {
-    const filterMata = document.getElementById('global-mata-anggaran').value;
-    const gridContainer = document.getElementById('regional-metrics-grid');
-    if (!gridContainer) return;
-    gridContainer.innerHTML = '';
-
-    let grandAlokasi = 0, grandRealisasi = 0;
-
-    wilayahList.forEach((w) => {
-        let wilayahAlokasi = 0, wilayahRealisasi = 0;
-
-        mataAnggaranList.forEach(m => {
-            if (filterMata === 'ALL' || filterMata === m) {
-                const key = `${w}__${m}`;
-                wilayahAlokasi += appData.alokasi[key] || 0;
-                wilayahRealisasi += appData.realisasi[key] || 0;
-            }
-        });
-
-        const pct = wilayahAlokasi > 0 ? (wilayahRealisasi / wilayahAlokasi) * 100 : 0;
-        grandAlokasi += wilayahAlokasi;
-        grandRealisasi += wilayahRealisasi;
-
-        let ewsBadgeStyle = "";
-        let progressColorStyle = "bg-teal-700";
-        let borderHighlight = "border-slate-200";
-
-        if (pct >= 75) {
-            ewsBadgeStyle = "bg-emerald-100 text-emerald-800 border-emerald-300";
-            progressColorStyle = "bg-emerald-600";
-        } else if (pct >= 40) {
-            ewsBadgeStyle = "bg-amber-100 text-amber-800 border-amber-300";
-            progressColorStyle = "bg-amber-500";
-        } else {
-            ewsBadgeStyle = "bg-rose-100 text-rose-800 border-rose-300";
-            progressColorStyle = "bg-rose-600";
-            borderHighlight = "border-rose-300 shadow-sm shadow-rose-50"; 
-        }
-
-        let projectCount = 0;
-        if(appData.rawProjects.length > 0) {
-            projectCount = appData.rawProjects.filter(p => p.wilayah === w && (filterMata === 'ALL' || p.mataAnggaran === filterMata)).length;
-        } else {
-            projectCount = appData.asetCount[w] || 0;
-        }
-
-        gridContainer.innerHTML += `
-            <div class="bg-white rounded-xl p-4 shadow-sm border ${borderHighlight} transition hover:shadow-md flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-start mb-1.5">
-                        <h4 class="text-xs font-bold text-slate-800 truncate pr-2" title="${w}">${w}</h4>
-                        <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${projectCount} project</span>
-                    </div>
-                    <div class="text-sm font-black text-slate-700 mb-3">${formatIDR(wilayahRealisasi)}</div>
-                </div>
-                <div class="mt-auto space-y-2">
-                    <div class="flex justify-between items-center text-[11px] text-slate-400">
-                        <span>Konfirmasi Realisasi</span>
-                        <span class="font-bold text-slate-700">${pct.toFixed(0)}%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div class="progress-bar-custom h-full ${progressColorStyle}" style="width: ${Math.min(pct, 100)}%"></div>
-                    </div>
-                    <div class="text-[10px] font-bold border rounded py-0.5 px-2 text-center mt-1.5 ${ewsBadgeStyle}">
-                        ${pct >= 75 ? 'GREEN: Healthy' : pct >= 40 ? 'YELLOW: Warning' : 'RED: Critical'} (${pct.toFixed(1)}%)
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-
-    document.getElementById('sum-alokasi').innerText = formatIDR(grandAlokasi);
-    document.getElementById('sum-realisasi').innerText = formatIDR(grandRealisasi);
-    
-    const ewsGlobalCard = document.getElementById('card-workspace-status');
-    const ewsGlobalText = document.getElementById('sum-ews-text');
-    const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
-
-    const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
-    if(ewsGlobalText) ewsGlobalText.innerText = `${agregatPct.toFixed(1)}%`;
-
-    if(ewsGlobalCard) {
-        ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
-        if (agregatPct >= 75) { 
-            ewsGlobalCard.classList.add('border-l-emerald-500'); 
-            if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-emerald-600 font-bold">● GREEN</span> (Healthy): Penyerapan Optimal`;
-        } else if (agregatPct >= 40) { 
-            ewsGlobalCard.classList.add('border-l-amber-500'); 
-            if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-amber-500 font-bold">● YELLOW</span> (Warning): Penyerapan Pantau/Awas`;
-        } else { 
-            ewsGlobalCard.classList.add('border-l-rose-500'); 
-            if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-rose-600 font-bold">● RED</span> (Critical): Penyerapan Rendah`;
-        }
-    }
-
-    document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
-    
-    // SOLUSI UTAMA 1: Baris renderWilayahDetails() di sini TELAH DIHAPUS untuk memutus loop berantai!
-    renderTimelineView();
-}
-
-// FUNGSI BARU: Mengontrol filter mata anggaran atas secara aman
-function onGlobalFilterChange() {
-    processDataAndRender(); // Perbarui Scorecard atas & Card depan
-    
-    // Hanya perbarui tabel Tab 2 jika pengguna memang sedang aktif membuka Tab 2
-    const tabWilayahIsActive = !document.getElementById('tab-wilayah').classList.contains('hidden');
-    if (tabWilayahIsActive) {
-        renderWilayahDetails();
-    }
-}
-
-        // Pemicu perubahan filter mata anggaran di atas agar tidak mematikan browser
-        function onGlobalFilterChange() {
-            processDataAndRender();
+        // PERBAIKAN SINKRONISASI SWITCH TAB (Tab Bisa Dibuka Dengan Aman)
+        function switchTab(event, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-slate-100', 'text-bni-teal', 'border-b-2', 'border-bni-teal');
+                el.classList.add('text-slate-500');
+            });
             
-            // Jika pengguna sedang berada di Tab 2 saat mengubah filter mata anggaran, update juga datanya
+            document.getElementById(tabId).classList.remove('hidden');
+            event.currentTarget.classList.add('bg-slate-100', 'text-bni-teal', 'border-b-2', 'border-bni-teal');
+            event.currentTarget.classList.remove('text-slate-500');
+
+            // Eksekusi render HANYA jika tab yang bersangkutan aktif di-klik pimpinan
+            if (tabId === 'tab-wilayah') {
+                renderWilayahDetails();
+            } else if (tabId === 'tab-timeline') {
+                renderTimelineView();
+            }
+        }
+
+        // Pengendali filter droplist atas yang aman dari pemicu loop berantai
+        function onGlobalFilterChange() {
+            processDataAndRender(); // Update Scorecard atas & Card depan
+            
+            // Perbarui Tab 2 hanya jika pengguna memang sedang aktif membuka Tab 2
             const tabWilayahIsActive = !document.getElementById('tab-wilayah').classList.contains('hidden');
             if (tabWilayahIsActive) {
                 renderWilayahDetails();
@@ -552,113 +459,113 @@ function onGlobalFilterChange() {
                 }
             }
 
-            document.getElementById('sum-text-sisa' || 'sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
+            document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
             
-            // PENGAMAN ABSOLUT: DI SINI KITA HAPUS REKURSION CALL renderWilayahDetails() KARENA SUDAH DIHANDLE OLEH switchTab()!
+            // DISINKRONKAN: Pemanggilan balik renderWilayahDetails() dari sini dihapus permanen agar tidak freeze!
         }
 
+        // OPTIMASI TOTAL: Menggunakan metode Pengumpul String agar proses klik/cari berjalan sangat cepat
         function renderWilayahDetails() {
-    const selectEl = document.getElementById('select-filter-wilayah');
-    const currentW = selectEl ? selectEl.value : "ALL";
-    const filterMata = document.getElementById('global-mata-anggaran').value;
-    
-    const searchInput = document.getElementById('search-project-name');
-    const searchKeyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
-    
-    // Penyaringan data proyek terpusat
-    const filteredProjects = appData.rawProjects.filter(p => {
-        const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
-        const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
-        const matchSearch = (p.nama.toLowerCase().includes(searchKeyword) || p.id.toLowerCase().includes(searchKeyword));
-        return matchWilayah && matchMata && matchSearch;
-    });
-
-    // 1. Gambar Ringkasan Sektor Kiri
-    const tbodyMata = document.getElementById('tbody-detail-wilayah');
-    if(tbodyMata) {
-        let mataHtml = ""; // String Accumulator Kiri
-        let targetText = (pct) => pct >= 75 ? `<span class="text-emerald-600 font-bold">● Hijau</span>` : pct >= 40 ? `<span class="text-amber-500 font-bold">● Kuning</span>` : `<span class="text-rose-600 font-bold">● Merah</span>`;
-
-        mataAnggaranList.forEach(m => {
-            let countMataProjects = 0;
-            let alokasiMata = 0;
-            let realisasiMata = 0;
-
-            appData.rawProjects.forEach(p => {
-                const matchWil = (currentW === "ALL" || p.wilayah === currentW);
-                if (matchWil && p.mataAnggaran === m) {
-                    countMataProjects++;
-                    alokasiMata += p.alokasi || 0;
-                    realisasiMata += p.realisasi || 0;
-                }
+            const selectEl = document.getElementById('select-filter-wilayah');
+            const currentW = selectEl ? selectEl.value : "ALL";
+            const filterMata = document.getElementById('global-mata-anggaran').value;
+            
+            const searchInput = document.getElementById('search-project-name');
+            const searchKeyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            
+            const filteredProjects = appData.rawProjects.filter(p => {
+                const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
+                const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
+                const matchSearch = (p.nama.toLowerCase().includes(searchKeyword) || p.id.toLowerCase().includes(searchKeyword));
+                return matchWilayah && matchMata && matchSearch;
             });
 
-            if(countMataProjects === 0 && currentW !== "ALL") {
-                const key = `${currentW}__${m}`;
-                alokasiMata = appData.alokasi[key] || 0;
-                realisasiMata = appData.realisasi[key] || 0;
+            // 1. Gambar Ringkasan Sektor Kiri
+            const tbodyMata = document.getElementById('tbody-detail-wilayah');
+            if(tbodyMata) {
+                let mataHtml = ""; 
+                let targetText = (pct) => pct >= 75 ? `<span class="text-emerald-600 font-bold">● Hijau</span>` : pct >= 40 ? `<span class="text-amber-500 font-bold">● Kuning</span>` : `<span class="text-rose-600 font-bold">● Merah</span>`;
+
+                mataAnggaranList.forEach(m => {
+                    let countMataProjects = 0;
+                    let alokasiMata = 0;
+                    let realisasiMata = 0;
+
+                    appData.rawProjects.forEach(p => {
+                        const matchWil = (currentW === "ALL" || p.wilayah === currentW);
+                        if (matchWil && p.mataAnggaran === m) {
+                            countMataProjects++;
+                            alokasiMata += p.alokasi || 0;
+                            realisasiMata += p.realisasi || 0;
+                        }
+                    });
+
+                    if(countMataProjects === 0 && currentW !== "ALL") {
+                        const key = `${currentW}__${m}`;
+                        alokasiMata = appData.alokasi[key] || 0;
+                        realisasiMata = appData.realisasi[key] || 0;
+                    }
+
+                    const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
+
+                    mataHtml += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3 font-semibold text-slate-700">${m}</td>
+                            <td class="p-3 text-slate-600 font-bold">${countMataProjects} Proyek</td>
+                            <td class="p-3">${formatIDR(alokasiMata)}</td>
+                            <td class="p-3 font-medium text-slate-800">${formatIDR(realisasiMata)}</td>
+                            <td class="p-3 text-[11px]">${targetText(pctMata)}</td>
+                        </tr>
+                    `;
+                });
+                tbodyMata.innerHTML = mataHtml; 
             }
 
-            const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
+            // 2. Gambar Breakdown Project Sektor Kanan (Kecepatan Instan)
+            const tbodyProject = document.getElementById('tbody-project-list');
+            if(tbodyProject) {
+                const badgeEl = document.getElementById('project-count-badge');
+                if(badgeEl) badgeEl.innerText = `${filteredProjects.length} Proyek`;
 
-            mataHtml += `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="p-3 font-semibold text-slate-700">${m}</td>
-                    <td class="p-3 text-slate-600 font-bold">${countMataProjects} Proyek</td>
-                    <td class="p-3">${formatIDR(alokasiMata)}</td>
-                    <td class="p-3 font-medium text-slate-800">${formatIDR(realisasiMata)}</td>
-                    <td class="p-3 text-[11px]">${targetText(pctMata)}</td>
-                </tr>
-            `;
-        });
-        tbodyMata.innerHTML = mataHtml; // Inject sekaligus di akhir loop kiri
-    }
+                if(filteredProjects.length === 0) {
+                    tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
+                    return;
+                }
 
-    // 2. Gambar Breakdown Project Sektor Kanan (Fitur Utama Kecepatan)
-    const tbodyProject = document.getElementById('tbody-project-list');
-    if(tbodyProject) {
-        const badgeEl = document.getElementById('project-count-badge');
-        if(badgeEl) badgeEl.innerText = `${filteredProjects.length} Proyek`;
+                let projectHtml = ""; 
 
-        if(filteredProjects.length === 0) {
-            tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
-            return;
+                filteredProjects.forEach(p => {
+                    const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
+                    let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
+
+                    projectHtml += `
+                        <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
+                            <td class="p-3">
+                                <div class="text-xs font-mono text-cyan-700 font-bold">${p.id}</div>
+                                <div class="text-xs font-bold text-slate-800">${p.nama}</div>
+                                ${currentW === "ALL" ? `<div class="text-[10px] text-slate-400 font-medium">${p.wilayah}</div>` : ''}
+                            </td>
+                            <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
+                            <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
+                            <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
+                            <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(p.realisasi)}</td>
+                            <td class="p-3">
+                                <div class="flex flex-col items-center gap-1 min-w-[70px]">
+                                    <span class="font-extrabold text-[11px]">${pPct.toFixed(0)}%</span>
+                                    <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                        <div class="h-full ${barColor}" style="width: ${Math.min(pPct, 100)}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">${p.milestone || 'Tahap Konstruksi'}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbodyProject.innerHTML = projectHtml; 
+            }
         }
-
-        let projectHtml = ""; // SOLUSI UTAMA 2: String Accumulator Kanan
-
-        filteredProjects.forEach(p => {
-            const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
-            let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
-
-            projectHtml += `
-                <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
-                    <td class="p-3">
-                        <div class="text-xs font-mono text-cyan-700 font-bold">${p.id}</div>
-                        <div class="text-xs font-bold text-slate-800">${p.nama}</div>
-                        ${currentW === "ALL" ? `<div class="text-[10px] text-slate-400 font-medium">${p.wilayah}</div>` : ''}
-                    </td>
-                    <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
-                    <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
-                    <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
-                    <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(p.realisasi)}</td>
-                    <td class="p-3">
-                        <div class="flex flex-col items-center gap-1 min-w-[70px]">
-                            <span class="font-extrabold text-[11px]">${pPct.toFixed(0)}%</span>
-                            <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                <div class="h-full ${barColor}" style="width: ${Math.min(pPct, 100)}%"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-3 text-center">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">${p.milestone || 'Tahap Konstruksi'}</span>
-                    </td>
-                </tr>
-            `;
-        });
-        tbodyProject.innerHTML = projectHtml; // Inject sekaligus di akhir loop kanan
-    }
-}
 
         function executeSwitching() {
             const fW = document.getElementById('switch-from-wilayah').value;

@@ -76,9 +76,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Pagu</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Anggaran</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-alokasi">Rp 0</div>
-                <div class="text-[11px] text-slate-400 mt-1">Plavon anggaran induk gabungan</div>
+                <div class="text-[11px] text-slate-400 mt-1">Anggaran maksimum gabungan</div>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-emerald-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Realisasi YTD</div>
@@ -437,12 +437,34 @@
             document.getElementById('sum-realisasi-pct').innerText = `${totalPct.toFixed(1)}% Penyerapan Global`;
             document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
 
-            const ewsGlobalCard = document.getElementById('card-ews-status');
-            const ewsGlobalText = document.getElementById('sum-ews-text');
-            ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
-            if (totalPct >= 75) { ewsGlobalCard.classList.add('border-l-emerald-500'); ewsGlobalText.innerText = "HIJAU (AMAN)"; }
-            else if (totalPct >= 40) { ewsGlobalCard.classList.add('border-l-amber-500'); ewsGlobalText.innerText = "KUNING (PANTAU)"; }
-            else { ewsGlobalCard.classList.add('border-l-rose-500'); ewsGlobalText.innerText = "MERAH (KRITIS)"; }
+            // =========================================================================
+// PERBAIKAN LOGIKA: MENAMPILKAN ANGKA % SERAPAN AGREGAT GLOBAL PADA UTAMA CARD
+// =========================================================================
+
+const ewsGlobalCard = document.getElementById('card-ews-status');
+const ewsGlobalText = document.getElementById('sum-ews-text');
+const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
+
+// 1. Hitung formula persentase penyerapan agregat global secara riil
+const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
+
+// 2. PERBAIKAN UTAMA: Masukkan variabel agregatPct ke innerText agar yang muncul ANGKA %, bukan teks status!
+ewsGlobalText.innerText = `${agregatPct.toFixed(1)}%`;
+
+// 3. Reset kelas dasar pembungkus card kotak scorecard
+ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
+
+// 4. Atur warna border samping dan teks keterangan bawah berdasarkan ambang batas EWS
+if (agregatPct >= 75) { 
+    ewsGlobalCard.classList.add('border-l-emerald-500'); 
+    ewsGlobalDesc.innerHTML = `<span class="text-emerald-600 font-bold">● GREEN</span> (Healthy): Penyerapan Optimal`;
+} else if (agregatPct >= 40) { 
+    ewsGlobalCard.classList.add('border-l-amber-500'); 
+    ewsGlobalDesc.innerHTML = `<span class="text-amber-500 font-bold">● YELLOW</span> (Warning): Penyerapan Pantau/Awas`;
+} else { 
+    ewsGlobalCard.classList.add('border-l-rose-500'); 
+    ewsGlobalDesc.innerHTML = `<span class="text-rose-600 font-bold">● RED</span> (Critical): Penyerapan Rendah`;
+}
 
             renderWilayahDetails();
             renderTimelineView();

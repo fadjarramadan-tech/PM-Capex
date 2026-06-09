@@ -76,9 +76,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Anggaran</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Pagu</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-alokasi">Rp 0</div>
-                <div class="text-[11px] text-slate-400 mt-1">Anggaran maksimum gabungan</div>
+                <div class="text-[11px] text-slate-400 mt-1">Plavon anggaran induk gabungan</div>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-emerald-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Realisasi YTD</div>
@@ -86,10 +86,10 @@
                 <div class="text-[11px] text-emerald-600 font-semibold mt-1" id="sum-realisasi-pct">0% Serapan</div>
             </div>
             <div id="card-ews-status" class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-amber-500 border border-slate-200">
-    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Persentase Serapan Agregat</div>
-    <div class="text-2xl font-black text-slate-800" id="sum-ews-text">0%</div>
-    <div class="text-[11px] text-slate-400 mt-1" id="sum-ews-desc">Formula: (Realisasi / Alokasi) x 100</div>
-</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Persentase Serapan Agregat</div>
+                <div class="text-2xl font-black text-slate-800" id="sum-ews-text">0%</div>
+                <div class="text-[11px] text-slate-400 mt-1" id="sum-ews-desc">Formula: (Realisasi / Alokasi) x 100</div>
+            </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-indigo-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Sisa Plafon Anggaran</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-sisa">Rp 0</div>
@@ -108,10 +108,19 @@
         </div>
 
         <div id="tab-wilayah" class="tab-content content-segment hidden">
-            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex items-center gap-3 mb-4">
+            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col md:flex-row gap-4 items-end mb-4">
                 <div class="flex flex-col gap-1 w-full max-w-xs">
                     <label class="text-xs font-bold text-emerald-800 uppercase">Pilih Wilayah Operasional</label>
-                    <select id="select-filter-wilayah" class="border border-emerald-200 rounded-lg p-2 text-sm bg-white outline-none" onchange="renderWilayahDetails()"></select>
+                    <select id="select-filter-wilayah" class="border border-emerald-200 rounded-lg p-2 text-sm bg-white outline-none w-full" onchange="renderWilayahDetails()"></select>
+                </div>
+                <div class="flex flex-col gap-1 w-full md:flex-1 max-w-md">
+                    <label class="text-xs font-bold text-emerald-800 uppercase">Cari Nama Project</label>
+                    <div class="relative w-full">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </span>
+                        <input type="text" id="search-project-name" onkeyup="renderWilayahDetails()" placeholder="Ketik nama atau kata kunci proyek di sini..." class="w-full border border-emerald-200 rounded-lg p-2 pl-9 text-sm bg-white outline-none focus:border-bni-teal">
+                    </div>
                 </div>
             </div>
 
@@ -125,6 +134,7 @@
                             <thead>
                                 <tr class="bg-slate-100 text-bni-teal border-b border-slate-200">
                                     <th class="p-3 font-bold">Mata Anggaran</th>
+                                    <th class="p-3 font-bold">Total Proyek</th>
                                     <th class="p-3 font-bold">Alokasi (Rp)</th>
                                     <th class="p-3 font-bold">Realisasi (Rp)</th>
                                     <th class="p-3 font-bold">Serapan</th>
@@ -148,14 +158,14 @@
                                 <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
                                     <th class="p-3 font-bold">ID & Nama Project</th>
                                     <th class="p-3 font-bold">Mata Anggaran</th>
+                                    <th class="p-3 font-bold text-right">Estimasi Awal (Rp)</th>
                                     <th class="p-3 font-bold text-right">Alokasi Akhir (Rp)</th>
                                     <th class="p-3 font-bold text-right">Realisasi YTD (Rp)</th>
                                     <th class="p-3 font-bold text-center">Progress</th>
                                     <th class="p-3 font-bold text-center">Milestone</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbody-project-list" class="divide-y divide-slate-100">
-                                </tbody>
+                            <tbody id="tbody-project-list" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
@@ -271,12 +281,11 @@
 
         const mataAnggaranList = ["Tanah", "Bangunan", "Perbotan Non Otomasi", "Kendaraan"];
 
-        // State Global dengan Array Penampung Rincian Project Riil
         let appData = {
             alokasi: {},
             realisasi: {},
             asetCount: {}, 
-            rawProjects: [], // Menyimpan array rincian seluruh project dari Google Sheet
+            rawProjects: [], 
             switchingLogs: []
         };
 
@@ -308,10 +317,7 @@
                     appData.alokasi = json.alokasi;
                     appData.realisasi = json.realisasi;
                     appData.asetCount = json.asetCount || {};
-                    
-                    // Simpan data mentah daftar project dari server (jika didukung Apps Script)
-                    // Jika Apps Script belum mengirimkan properti projects, kita buatkan simulasi berbasis data running
-                    appData.rawProjects = json.projects || generateSimulatedProjects();
+                    appData.rawProjects = json.projects || [];
                     
                     showToast("Berhasil sinkronisasi dengan database Google Sheets Live.");
                     apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
@@ -321,34 +327,8 @@
                 console.warn("Koneksi gagal, memuat simulasi data proyek aktif:", e);
                 apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
                 apiStatusEl.innerText = "Mode Data Simulasi Aktif";
-                appData.rawProjects = generateSimulatedProjects();
             }
             processDataAndRender();
-        }
-
-        // Fungsi pembantu membuat daftar proyek otomatis jika kolom sheet belum ditarik utuh
-        function generateSimulatedProjects() {
-            let temp = [];
-            wilayahList.forEach((w) => {
-                mataAnggaranList.forEach((m, idx) => {
-                    const key = `${w}__${m}`;
-                    const targetAlokasi = appData.alokasi[key] || 2500000000;
-                    const targetRealisasi = appData.realisasi[key] || 1200000000;
-                    
-                    if(targetAlokasi > 0) {
-                        temp.push({
-                            id: `PRJ-${w.substring(8,10)}-0${idx+1}`,
-                            nama: `Pengadaan Aktivitas ${m} Strategis ${w.split(' ')[0]}`,
-                            wilayah: w,
-                            mataAnggaran: m,
-                            alokasi: targetAlokasi,
-                            realisasi: targetRealisasi,
-                            milestone: targetRealisasi >= targetAlokasi * 0.75 ? "Pengerjaan 100%" : "Tahap Konstruksi/Tender"
-                        });
-                    }
-                });
-            });
-            return temp;
         }
 
         function formatIDR(val) {
@@ -433,79 +413,98 @@
 
             document.getElementById('sum-alokasi').innerText = formatIDR(grandAlokasi);
             document.getElementById('sum-realisasi').innerText = formatIDR(grandRealisasi);
-            const totalPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
-            document.getElementById('sum-realisasi-pct').innerText = `${totalPct.toFixed(1)}% Penyerapan Global`;
+            
+            const ewsGlobalCard = document.getElementById('card-ews-status');
+            const ewsGlobalText = document.getElementById('sum-ews-text');
+            const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
+
+            const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
+            ewsGlobalText.innerText = `${agregatPct.toFixed(1)}%`;
+
+            ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
+            if (agregatPct >= 75) { 
+                ewsGlobalCard.classList.add('border-l-emerald-500'); 
+                ewsGlobalDesc.innerHTML = `<span class="text-emerald-600 font-bold">● GREEN</span> (Healthy): Penyerapan Optimal`;
+            } else if (agregatPct >= 40) { 
+                ewsGlobalCard.classList.add('border-l-amber-500'); 
+                ewsGlobalDesc.innerHTML = `<span class="text-amber-500 font-bold">● YELLOW</span> (Warning): Penyerapan Pantau/Awas`;
+            } else { 
+                ewsGlobalCard.classList.add('border-l-rose-500'); 
+                ewsGlobalDesc.innerHTML = `<span class="text-rose-600 font-bold">● RED</span> (Critical): Penyerapan Rendah`;
+            }
+
             document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
-
-            // =========================================================================
-// PERBAIKAN LOGIKA: MENAMPILKAN ANGKA % SERAPAN AGREGAT GLOBAL PADA UTAMA CARD
-// =========================================================================
-
-const ewsGlobalCard = document.getElementById('card-ews-status');
-const ewsGlobalText = document.getElementById('sum-ews-text');
-const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
-
-// 1. Hitung formula persentase penyerapan agregat global secara riil
-const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
-
-// 2. PERBAIKAN UTAMA: Masukkan variabel agregatPct ke innerText agar yang muncul ANGKA %, bukan teks status!
-ewsGlobalText.innerText = `${agregatPct.toFixed(1)}%`;
-
-// 3. Reset kelas dasar pembungkus card kotak scorecard
-ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
-
-// 4. Atur warna border samping dan teks keterangan bawah berdasarkan ambang batas EWS
-if (agregatPct >= 75) { 
-    ewsGlobalCard.classList.add('border-l-emerald-500'); 
-    ewsGlobalDesc.innerHTML = `<span class="text-emerald-600 font-bold">● GREEN</span> (Healthy): Penyerapan Optimal`;
-} else if (agregatPct >= 40) { 
-    ewsGlobalCard.classList.add('border-l-amber-500'); 
-    ewsGlobalDesc.innerHTML = `<span class="text-amber-500 font-bold">● YELLOW</span> (Warning): Penyerapan Pantau/Awas`;
-} else { 
-    ewsGlobalCard.classList.add('border-l-rose-500'); 
-    ewsGlobalDesc.innerHTML = `<span class="text-rose-600 font-bold">● RED</span> (Critical): Penyerapan Rendah`;
-}
 
             renderWilayahDetails();
             renderTimelineView();
         }
 
-        // RENDERING TAB 2: SEKARANG TERBAGI RINGKASAN POS & DAFTAR RINCIAN PROYEK NYATA
+        // RE-DESIGN UTAMA: RENDERING TAB 2 DETAIL WILAYAH & SEARCHING BREAKDOWN
         function renderWilayahDetails() {
-            const currentW = document.getElementById('select-filter-wilayah').value || wilayahList[0];
+            const currentW = document.getElementById('select-filter-wilayah').value || "ALL";
             const filterMata = document.getElementById('global-mata-anggaran').value;
+            const searchKeyword = document.getElementById('search-project-name').value.toLowerCase().trim();
             
-            // 1. Render Tabel Ringkasan Kiri
+            // Filter Induk Proyek Berdasarkan Wilayah, Global Mata Anggaran, dan Keyword Search Box
+            const filteredProjects = appData.rawProjects.filter(p => {
+                const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
+                const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
+                const matchSearch = (p.nama.toLowerCase().includes(searchKeyword) || p.id.toLowerCase().includes(searchKeyword));
+                return matchWilayah && matchMata && matchSearch;
+            });
+
+            // FITUR 3: Hitung Jumlah Proyek & Nominal per Mata Anggaran Khusus Wilayah Terpilih
             const tbodyMata = document.getElementById('tbody-detail-wilayah');
             tbodyMata.innerHTML = '';
             let targetText = (pct) => pct >= 75 ? `<span class="text-emerald-600 font-bold">● Hijau</span>` : pct >= 40 ? `<span class="text-amber-500 font-bold">● Kuning</span>` : `<span class="text-rose-600 font-bold">● Merah</span>`;
 
             mataAnggaranList.forEach(m => {
-                const key = `${currentW}__${m}`;
-                const alokasi = appData.alokasi[key] || 0;
-                const realisasi = appData.realisasi[key] || 0;
-                const pct = alokasi > 0 ? (realisasi / alokasi) * 100 : 0;
+                let countMataProjects = 0;
+                let alokasiMata = 0;
+                let realisasiMata = 0;
+
+                if (currentW === "ALL") {
+                    // Jika pilih "Semua Wilayah", kumpulkan metrik dari seluruh proyek terfilter
+                    appData.rawProjects.forEach(p => {
+                        if (p.mataAnggaran === m) {
+                            countMataProjects++;
+                            alokasiMata += p.alokasi || 0;
+                            realisasiMata += p.realisasi || 0;
+                        }
+                    });
+                } else {
+                    // Jika pilih wilayah spesifik
+                    const key = `${currentW}__${m}`;
+                    alokasiMata = appData.alokasi[key] || 0;
+                    realisasiMata = appData.realisasi[key] || 0;
+                    
+                    appData.rawProjects.forEach(p => {
+                        if (p.wilayah === currentW && p.mataAnggaran === m) {
+                            countMataProjects++;
+                        }
+                    });
+                }
+
+                const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
 
                 tbodyMata.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3 font-semibold text-slate-700">${m}</td>
-                        <td class="p-3">${formatIDR(alokasi)}</td>
-                        <td class="p-3 font-medium text-slate-800">${formatIDR(realisasi)}</td>
-                        <td class="p-3 text-[11px]">${targetText(pct)}</td>
+                        <td class="p-3 text-slate-600 font-bold">${countMataProjects} Proyek</td>
+                        <td class="p-3">${formatIDR(alokasiMata)}</td>
+                        <td class="p-3 font-medium text-slate-800">${formatIDR(realisasiMata)}</td>
+                        <td class="p-3 text-[11px]">${targetText(pctMata)}</td>
                     </tr>
                 `;
             });
 
-            // 2. Render Tabel Breakdown Project Kanan (Fitur Baru)
+            // 2. Render Tabel Breakdown Project Kanan
             const tbodyProject = document.getElementById('tbody-project-list');
             tbodyProject.innerHTML = '';
-            
-            // Saring project yang hanya berada di Wilayah terpilih & sesuai filter mata anggaran
-            const filteredProjects = appData.rawProjects.filter(p => p.wilayah === currentW && (filterMata === 'ALL' || p.mataAnggaran === filterMata));
             document.getElementById('project-count-badge').innerText = `${filteredProjects.length} Proyek`;
 
             if(filteredProjects.length === 0) {
-                tbodyProject.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk filter mata anggaran ini.</td></tr>`;
+                tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
                 return;
             }
 
@@ -518,8 +517,10 @@ if (agregatPct >= 75) {
                         <td class="p-3">
                             <div class="text-xs font-mono text-cyan-700 font-bold">${p.id}</div>
                             <div class="text-xs font-bold text-slate-800">${p.nama}</div>
+                            ${currentW === "ALL" ? `<div class="text-[10px] text-slate-400 font-medium">${p.wilayah}</div>` : ''}
                         </td>
                         <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
+                        <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
                         <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
                         <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(p.realisasi)}</td>
                         <td class="p-3">
@@ -656,6 +657,9 @@ if (agregatPct >= 75) {
             const fillFilter = document.getElementById('select-filter-wilayah');
             const fW = document.getElementById('switch-from-wilayah');
             const tW = document.getElementById('switch-to-wilayah');
+
+            // FITUR 1: Tambahkan opsi "Semua Wilayah" di posisi paling atas dropdown Tab 2
+            fillFilter.innerHTML = `<option value="ALL">-- SEMUA WILAYAH GABUNGAN --</option>`;
 
             wilayahList.forEach(w => {
                 fillFilter.innerHTML += `<option value="${w}">${w}</option>`;

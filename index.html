@@ -52,6 +52,7 @@
 
     <div class="container mx-auto p-5 max-w-[1600px]">
         
+        <!-- Tabs -->
         <div class="flex bg-white p-2 rounded-t-xl border-b border-slate-200 gap-2 overflow-x-auto">
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard & Gabungan</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
@@ -59,6 +60,7 @@
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
         </div>
 
+        <!-- Filter Global -->
         <div class="bg-white p-4 rounded-b-xl shadow-sm border-x border-b border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
             <div class="flex flex-col gap-1">
                 <label class="text-xs font-bold text-slate-400 uppercase">Filter Mata Anggaran</label>
@@ -75,6 +77,7 @@
             </button>
         </div>
 
+        <!-- Scorecards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Pagu</div>
@@ -98,6 +101,7 @@
             </div>
         </div>
 
+        <!-- TAB 1 -->
         <div id="tab-dashboard" class="tab-content content-segment space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
@@ -119,6 +123,7 @@
                 </div>
             </div>
 
+            <!-- Top 5 Project Urgent -->
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-rose-700 flex items-center gap-1.5 uppercase tracking-wide">
@@ -146,6 +151,7 @@
             </div>
         </div>
 
+        <!-- TAB 2: DETAIL INDIVIDU PROJECT -->
         <div id="tab-wilayah" class="tab-content content-segment hidden">
             <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col md:flex-row gap-4 items-end mb-4">
                 <div class="flex flex-col gap-1 w-full max-w-xs">
@@ -164,6 +170,7 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <!-- Ringkasan Kiri -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-fit">
                     <div class="p-4 bg-slate-50 border-b border-slate-200">
                         <h3 class="font-bold text-sm text-slate-700">Ringkasan Pos Mata Anggaran</h3>
@@ -184,6 +191,7 @@
                     </div>
                 </div>
 
+                <!-- Breakdown Kanan: Bersih dengan Aksi Modal Pop-up -->
                 <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                     <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center z-10">
                         <h3 class="font-bold text-sm text-bni-teal uppercase tracking-wide flex items-center gap-2">
@@ -192,15 +200,16 @@
                         <span id="project-count-badge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2 py-0.5 rounded-full">0 Proyek</span>
                     </div>
                     <div class="overflow-auto max-h-[520px] w-full relative">
-                        <table class="w-full text-left text-xs table-auto min-w-[900px]">
+                        <table class="w-full text-left text-xs table-auto">
                             <thead class="sticky top-0 bg-slate-100 text-slate-600 shadow-sm z-20">
                                 <tr class="border-b border-slate-200">
-                                    <th class="p-3 font-bold bg-slate-100" style="width: 25%;">ID & Nama Project</th>
+                                    <th class="p-3 font-bold bg-slate-100">ID & Nama Project</th>
                                     <th class="p-3 font-bold bg-slate-100">Mata Anggaran</th>
                                     <th class="p-3 font-bold text-right bg-slate-100">Estimasi (Rp)</th>
                                     <th class="p-3 font-bold text-right bg-slate-100">Alokasi Akhir (Rp)</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100" style="width: 15%;">Realisasi Input (Rp)</th>
-                                    <th class="p-3 font-bold bg-slate-100" style="width: 20%;">Milestone Stage Dropdown</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Realisasi YTD (Rp)</th>
+                                    <th class="p-3 font-bold text-center bg-slate-100">Progress</th>
+                                    <th class="p-3 font-bold bg-slate-100">Milestone Terkini</th>
                                     <th class="p-3 font-bold text-center bg-slate-100">Aksi</th>
                                 </tr>
                             </thead>
@@ -211,6 +220,7 @@
             </div>
         </div>
 
+        <!-- TAB 3: SWITCHING -->
         <div id="tab-switching" class="tab-content content-segment hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -281,6 +291,7 @@
             </div>
         </div>
 
+        <!-- TAB 4 -->
         <div id="tab-timeline" class="tab-content content-segment hidden">
             <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                 <h3 class="font-bold text-sm text-bni-teal mb-3 uppercase">Timeline & Kurva Target Penyerapan (1 Tahun Anggaran)</h3>
@@ -304,6 +315,74 @@
 
     </div>
 
+    <!-- FITUR BARU: STRUKTUR MODAL POP-UP EDIT UTUH -->
+    <div id="modal-edit-project" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-lg w-full overflow-hidden flex flex-col transform transition-transform scale-100">
+            <!-- Header Modal -->
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-bni-teal"></i>
+                    <h3 class="font-bold text-slate-800 text-sm tracking-wide uppercase">Form Update Proyek CAPEX YTD</h3>
+                </div>
+                <button onclick="closeProjectModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-full hover:bg-slate-100">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <!-- Body Informasi Detail & Form -->
+            <div class="p-6 space-y-4 text-xs overflow-y-auto max-h-[70vh]">
+                <!-- Sektor Detail Informasi Informasi Proyek -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+                    <div class="grid grid-cols-3">
+                        <span class="text-slate-400 font-semibold">ID Project</span>
+                        <span class="col-span-2 font-mono font-bold text-cyan-800" id="modal-info-id">-</span>
+                    </div>
+                    <div class="grid grid-cols-3">
+                        <span class="text-slate-400 font-semibold">Nama Proyek</span>
+                        <span class="col-span-2 font-bold text-slate-800" id="modal-info-nama">-</span>
+                    </div>
+                    <div class="grid grid-cols-3">
+                        <span class="text-slate-400 font-semibold">Wilayah</span>
+                        <span class="col-span-2 font-medium text-slate-600" id="modal-info-wilayah">-</span>
+                    </div>
+                    <div class="grid grid-cols-3">
+                        <span class="text-slate-400 font-semibold">Mata Anggaran</span>
+                        <span class="col-span-2 font-medium text-slate-600" id="modal-info-mata">-</span>
+                    </div>
+                    <hr class="border-slate-200/60 my-1">
+                    <div class="grid grid-cols-3">
+                        <span class="text-slate-400 font-semibold">Estimasi Awal</span>
+                        <span class="col-span-2 font-bold text-slate-500" id="modal-info-estimasi">Rp 0</span>
+                    </div>
+                    <div class="grid grid-cols-3">
+                        <span class="text-slate-400 font-semibold">Alokasi Akhir</span>
+                        <span class="col-span-2 font-bold text-bni-teal" id="modal-info-alokasi">Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- Input Form Realisasi Bulanan -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-slate-600 uppercase">1. Nilai Realisasi Anggaran YTD (Rp)</label>
+                    <input type="number" id="modal-input-realisasi" class="w-full border border-slate-200 rounded-lg p-2 text-sm font-bold text-emerald-800 bg-slate-50 focus:bg-white outline-none focus:border-bni-teal">
+                </div>
+
+                <!-- Dropdown Milestone Kondisional -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-slate-600 uppercase">2. Milestone Tahapan Terkini</label>
+                    <select id="modal-select-milestone" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 focus:bg-white outline-none font-medium text-slate-700 focus:border-bni-teal">
+                        <!-- Diisi otomatis secara kondisional oleh javascript -->
+                    </select>
+                </div>
+            </div>
+            <!-- Footer Aksi -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+                <button onclick="closeProjectModal()" class="px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-lg text-xs bg-white hover:bg-slate-50 transition">Batal</button>
+                <button id="modal-btn-submit" onclick="submitModalProjectUpdate()" class="px-5 py-2 bg-bni-teal hover:bg-cyan-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Simpan Perubahan Data
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast">Notifikasi Real-time</div>
 
     <script>
@@ -318,7 +397,6 @@
 
         const mataAnggaranList = ["Tanah", "Bangunan", "Perbotan Non Otomasi", "Kendaraan"];
 
-        // FITUR BARU: Definisi Isi Opsi Droplist Milestone Berdasarkan Aturan Kategori Pos Anggaran
         const milestoneOptionsGroupA = [
             "Izin Prinsip", "Pengadaan Konsultan Perencana", "Pengadaan Kontraktor Pelaksana",
             "Penetapan, Pemenang & Kontrak", "Mobilisasi & Mulai Konstruksi", "Progres Fisik 50%",
@@ -338,6 +416,7 @@
         };
 
         let globalRankingChartInstance = null;
+        let selectedActiveProjectId = null; // Variabel penampung ID proyek yang sedang aktif diedit di modal
 
         function initBaseData() {
             appData.alokasi = {};
@@ -621,7 +700,7 @@
             tbodyUrgent.innerHTML = urgentHtml;
         }
 
-        // RE-DESIGN UTAMA TAB 2: INJECT INPUT FORM REALISASI & DROPLIST KONDISIONAL MILESTONE
+        // TAB 2 RENDERING: Dibuat bersih kembali, aksi diarahkan pemicu jendela Modal Pop-up
         function renderWilayahDetails() {
             const selectEl = document.getElementById('select-filter-wilayah');
             const currentW = selectEl ? selectEl.value : "ALL";
@@ -683,21 +762,15 @@
                 if(badgeEl) badgeEl.innerText = `${filteredProjects.length} Proyek`;
 
                 if(filteredProjects.length === 0) {
-                    tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
+                    tbodyProject.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
                     return;
                 }
 
                 let projectHtml = ""; 
 
                 filteredProjects.forEach(p => {
-                    // Penentuan Opsi Dropdown secara dinamis berdasarkan aturan jenis Mata Anggaran
-                    let selectedGroup = (p.mataAnggaran === "Tanah" || p.mataAnggaran === "Bangunan") ? milestoneOptionsGroupA : milestoneOptionsGroupB;
-                    
-                    let selectOptionsHtml = "";
-                    selectedGroup.forEach(opt => {
-                        let isSelected = (p.milestone && p.milestone.trim() === opt.trim()) ? "selected" : "";
-                        selectOptionsHtml += `<option value="${opt}" ${isSelected}>${opt}</option>`;
-                    });
+                    const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
+                    let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
 
                     projectHtml += `
                         <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
@@ -709,38 +782,81 @@
                             <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
                             <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
                             <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
-                            
-                            <td class="p-2">
-                                <input type="number" id="input-realisasi-${p.id}" value="${p.realisasi}" class="w-full border border-slate-200 rounded p-1 text-xs font-bold text-emerald-800 bg-slate-50 focus:bg-white outline-none">
+                            <td class="p-3 text-right font-bold text-slate-700">${formatIDR(p.realisasi)}</td>
+                            <td class="p-3">
+                                <div class="flex flex-col items-center gap-1 min-w-[60px]">
+                                    <span class="font-extrabold text-[11px]">${pPct.toFixed(0)}%</span>
+                                    <div class="w-14 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                        <div class="h-full ${barColor}" style="width: ${Math.min(pPct, 100)}%"></div>
+                                    </div>
+                                </div>
                             </td>
-                            
-                            <td class="p-2">
-                                <select id="select-milestone-${p.id}" class="w-full border border-slate-200 rounded p-1 text-[11px] bg-slate-50 focus:bg-white outline-none font-medium text-slate-700">
-                                    ${selectOptionsHtml}
-                                </select>
+                            <td class="p-3 font-semibold text-slate-600 truncate max-w-[150px]" title="${p.milestone || 'Izin Prinsip'}">
+                                ${p.milestone || 'Izin Prinsip'}
                             </td>
-                            
+                            <!-- AKSI: Memicu Pemanggilan Pengisi Jendela Pop-up Modal -->
                             <td class="p-2 text-center">
-                                <button id="btn-update-${p.id}" onclick="updateProjectDatabase('${p.id}')" class="bg-bni-teal hover:bg-cyan-800 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto shadow-sm transition">
-                                    <i data-lucide="save" class="w-3 h-3"></i> Simpan
+                                <button onclick="openProjectEditModal('${p.id}')" class="bg-bni-teal hover:bg-cyan-800 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto shadow-sm transition">
+                                    <i data-lucide="edit-3" class="w-3 h-3"></i> Update
                                 </button>
                             </td>
                         </tr>
                     `;
                 });
                 tbodyProject.innerHTML = projectHtml; 
-                lucide.createIcons(); // Re-render ikon save di dalam tabel
+                lucide.createIcons(); 
             }
         }
 
-        // FITUR UTAMA 2: Mengirimkan hasil update via AJAX POST ke API Google Apps Script Live
-        async function updateProjectDatabase(projectId) {
-            const btn = document.getElementById(`btn-update-${projectId}`);
-            const inputReal = document.getElementById(`input-realisasi-${projectId}`);
-            const selectMile = document.getElementById(`select-milestone-${projectId}`);
+        // FITUR POPUP 1: Mengisi Konten Detail Informasi Proyek Secara Utuh ke dalam Modal
+        function openProjectEditModal(projectId) {
+            const p = appData.rawProjects.find(item => item.id === projectId);
+            if(!p) return;
+
+            selectedActiveProjectId = projectId; // Amankan ID proyek target
+
+            // Tempel data detail ke elemen label modal
+            document.getElementById('modal-info-id').innerText = p.id;
+            document.getElementById('modal-info-nama').innerText = p.nama;
+            document.getElementById('modal-info-wilayah').innerText = p.wilayah;
+            document.getElementById('modal-info-mata').innerText = p.mataAnggaran;
+            document.getElementById('modal-info-estimasi').innerText = formatIDR(p.estimasiAwal || 0);
+            document.getElementById('modal-info-alokasi').innerText = formatIDR(p.alokasi);
             
-            if(!inputReal || !selectMile) return;
+            // Isi default value nominal input realisasi
+            document.getElementById('modal-input-realisasi').value = p.realisasi;
+
+            // Render dinamis pilihan droplist milestone di dalam modal sesuai kriteria pos anggaran
+            const milestoneSelect = document.getElementById('modal-select-milestone');
+            let activeGroup = (p.mataAnggaran === "Tanah" || p.mataAnggaran === "Bangunan") ? milestoneOptionsGroupA : milestoneOptionsGroupB;
             
+            let optionsHtml = "";
+            activeGroup.forEach(opt => {
+                let isSelected = (p.milestone && p.milestone.trim() === opt.trim()) ? "selected" : "";
+                optionsHtml += `<option value="${opt}" ${isSelected}>${opt}</option>`;
+            });
+            milestoneSelect.innerHTML = optionsHtml;
+
+            // Munculkan jendela Pop-up ke permukaan layar
+            const modal = document.getElementById('modal-edit-project');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeProjectModal() {
+            const modal = document.getElementById('modal-edit-project');
+            modal.classList.add('hidden');
+            selectedActiveProjectId = null;
+        }
+
+        // FITUR POPUP 2: Mengeksekusi AJAX POST Kiriman Data dari Modal ke API Google Sheets Live
+        async function submitModalProjectUpdate() {
+            if(!selectedActiveProjectId) return;
+
+            const btnSubmit = document.getElementById('modal-btn-submit');
+            const inputReal = document.getElementById('modal-input-realisasi');
+            const selectMile = document.getElementById('modal-select-milestone');
+
             const realisasiVal = parseFloat(inputReal.value);
             const milestoneVal = selectMile.value;
 
@@ -749,55 +865,54 @@
                 return;
             }
 
-            // Ubah tombol menjadi mode loading
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.className = "bg-slate-400 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto cursor-not-allowed";
-            btn.innerHTML = `<span>Proses...</span>`;
+            // Kunci tombol modal (Loading State)
+            const originalText = btnSubmit.innerHTML;
+            btnSubmit.disabled = true;
+            btnSubmit.className = "px-5 py-2 bg-slate-400 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 cursor-not-allowed";
+            btnSubmit.innerHTML = `<span>Menyimpan ke Sheets...</span>`;
 
             try {
-                const response = await fetch('https://script.google.com/macros/s/AKfycbyqyvXh2jclWVZE4STJ8G0c_M8agRnR8lk-WS1zCwXRkhQ6lthOjv_9VgA0QgIMkRn1nA/exec', {
+                await fetch('https://script.google.com/macros/s/AKfycbyqyvXh2jclWVZE4STJ8G0c_M8agRnR8lk-WS1zCwXRkhQ6lthOjv_9VgA0QgIMkRn1nA/exec', {
                     method: 'POST',
-                    mode: 'no-cors', // Apps Script Web App memerlukan no-cors jika tidak di-handle khusus redirect-nya
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        id: projectId,
+                        id: selectedActiveProjectId,
                         realisasi: realisasiVal,
                         milestone: milestoneVal
                     })
                 });
 
-                // Update data secara lokal agar dashboard ikut berubah seketika tanpa perlu hard-refresh page
-                const projectIndex = appData.rawProjects.findIndex(p => p.id === projectId);
-                if (projectIndex !== -1) {
-                    appData.rawProjects[projectIndex].realisasi = realisasiVal;
-                    appData.rawProjects[projectIndex].milestone = milestoneVal;
-                    
-                    // Hitung ulang akumulasi nilai level wilayah objek penampung induk
-                    const p = appData.rawProjects[projectIndex];
+                // Sinkronisasi mutasi data di memori lokal web browser seketika
+                const idx = appData.rawProjects.findIndex(p => p.id === selectedActiveProjectId);
+                if (idx !== -1) {
+                    appData.rawProjects[idx].realisasi = realisasiVal;
+                    appData.rawProjects[idx].milestone = milestoneVal;
+
+                    const p = appData.rawProjects[idx];
                     const key = `${p.wilayah}__${p.mataAnggaran}`;
                     
-                    // Rekalkulasi total gabungan running data lokal
-                    let newWilayahRealisasiSum = 0;
+                    let newSum = 0;
                     appData.rawProjects.forEach(item => {
                         if(`${item.wilayah}__${item.mataAnggaran}` === key) {
-                            newWilayahRealisasiSum += item.realisasi;
+                            newSum += item.realisasi;
                         }
                     });
-                    appData.realisasi[key] = newWilayahRealisasiSum;
+                    appData.realisasi[key] = newSum;
                 }
 
-                showToast(`Project ${projectId} berhasil disimpan ke Google Sheets!`);
-                processDataAndRender(); // Re-render scorecard atas & barchart agar ikut sinkron bergerak
-                
+                showToast(`Data Proyek ${selectedActiveProjectId} sukses disimpan ke database!`);
+                closeProjectModal(); // Tutup modal pop-up
+                processDataAndRender(); // Segarkan scorecard atas dan grafik barchart
+                renderWilayahDetails(); // Segarkan baris tabel Tab 2 belakang modal
+
             } catch (error) {
-                console.error("Gagal mengirim update data:", error);
-                alert("Koneksi API bermasalah, gagal menyimpan data.");
+                console.error("Gagal submit update:", error);
+                alert("Terjadi kendala jaringan API, gagal mengupdate spreadsheet.");
             } finally {
-                // Kembalikan tombol ke kondisi semula
-                btn.disabled = false;
-                btn.className = "bg-bni-teal hover:bg-cyan-800 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto shadow-sm transition";
-                btn.innerHTML = originalText;
+                btnSubmit.disabled = false;
+                btnSubmit.className = "px-5 py-2 bg-bni-teal hover:bg-cyan-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition";
+                btnSubmit.innerHTML = originalText;
                 lucide.createIcons();
             }
         }

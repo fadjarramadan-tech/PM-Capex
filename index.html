@@ -279,7 +279,7 @@
             "Wilayah 17 (Yogyakarta)", "Wilayah 18 (Malang)"
         ];
 
-        const mataAnggaranList = ["Tanah", "Bangunan", "Perbotan Non Otomasi", "Kendaraan"];
+        const mataAnggaranList = ["Tanah", "Bandunan", "Perbotan Non Otomasi", "Kendaraan"];
 
         let appData = {
             alokasi: {},
@@ -385,12 +385,18 @@
                     borderHighlight = "border-rose-300 shadow-sm shadow-rose-50"; 
                 }
 
+                // Cek isi hitungan aset dari API, jika 0 hitung dari rawProjects
+                let projectCount = appData.asetCount[w] || 0;
+                if(projectCount === 0 && appData.rawProjects.length > 0) {
+                    projectCount = appData.rawProjects.filter(p => p.wilayah === w && (filterMata === 'ALL' || p.mataAnggaran === filterMata)).length;
+                }
+
                 gridContainer.innerHTML += `
                     <div class="bg-white rounded-xl p-4 shadow-sm border ${borderHighlight} transition hover:shadow-md flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-1.5">
                                 <h4 class="text-xs font-bold text-slate-800 truncate pr-2" title="${w}">${w}</h4>
-                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${appData.asetCount[w] || 0} project</span>
+                                <span class="bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap">${projectCount} project</span>
                             </div>
                             <div class="text-sm font-black text-slate-700 mb-3">${formatIDR(wilayahRealisasi)}</div>
                         </div>
@@ -421,31 +427,36 @@
             const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
             ewsGlobalText.innerText = `${agregatPct.toFixed(1)}%`;
 
-            ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
-            if (agregatPct >= 75) { 
-                ewsGlobalCard.classList.add('border-l-emerald-500'); 
-                ewsGlobalDesc.innerHTML = `<span class="text-emerald-600 font-bold">● GREEN</span> (Healthy): Penyerapan Optimal`;
-            } else if (agregatPct >= 40) { 
-                ewsGlobalCard.classList.add('border-l-amber-500'); 
-                ewsGlobalDesc.innerHTML = `<span class="text-amber-500 font-bold">● YELLOW</span> (Warning): Penyerapan Pantau/Awas`;
-            } else { 
-                ewsGlobalCard.classList.add('border-l-rose-500'); 
-                ewsGlobalDesc.innerHTML = `<span class="text-rose-600 font-bold">● RED</span> (Critical): Penyerapan Rendah`;
+            if(ewsGlobalCard) {
+                ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
+                if (agregatPct >= 75) { 
+                    ewsGlobalCard.classList.add('border-l-emerald-500'); 
+                    if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-emerald-600 font-bold">● GREEN</span> (Healthy): Penyerapan Optimal`;
+                } else if (agregatPct >= 40) { 
+                    ewsGlobalCard.classList.add('border-l-amber-500'); 
+                    if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-amber-500 font-bold">● YELLOW</span> (Warning): Penyerapan Pantau/Awas`;
+                } else { 
+                    ewsGlobalCard.classList.add('border-l-rose-500'); 
+                    if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-rose-600 font-bold">● RED</span> (Critical): Penyerapan Rendah`;
+                }
             }
 
             document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
 
-            renderWilayahDetails();
+            // Mencegah looping berantai tak terbatas saat inisialisasi awal halaman
+            if(document.getElementById('tab-wilayah').classList.contains('hidden') === false || appData.rawProjects.length > 0) {
+                renderWilayahDetails(true);
+            }
             renderTimelineView();
         }
 
-        // PERBAIKAN TOTAL: PENYINKRONAN LOGIKA HITUNGAN AGREGAT PADA TAB 2
-        function renderWilayahDetails() {
+        // SEKTOR YANG DIPERBAIKI (Dipecah logikanya agar tidak memicu rekursif loop)
+        function renderWilayahDetails(isInternalCall = false) {
             const currentW = document.getElementById('select-filter-wilayah').value || "ALL";
             const filterMata = document.getElementById('global-mata-anggaran').value;
             const searchKeyword = document.getElementById('search-project-name').value.toLowerCase().trim();
             
-            // Filter Induk Proyek Berdasarkan Parameter Wilayah, Global Mata Anggaran, dan Keyword Search Box
+            // Filter Project Utama
             const filteredProjects = appData.rawProjects.filter(p => {
                 const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
                 const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
@@ -453,78 +464,82 @@
                 return matchWilayah && matchMata && matchSearch;
             });
 
-            // RENDERING SEKTOR KIRI: Menghitung Akumulasi Pos Anggaran Langsung dari Array Proyek Riil
+            // 1. Rendering Sektor Kiri (Ringkasan Mata Anggaran)
             const tbodyMata = document.getElementById('tbody-detail-wilayah');
-            tbodyMata.innerHTML = '';
-            let targetText = (pct) => pct >= 75 ? `<span class="text-emerald-600 font-bold">● Hijau</span>` : pct >= 40 ? `<span class="text-amber-500 font-bold">● Kuning</span>` : `<span class="text-rose-600 font-bold">● Merah</span>`;
+            if(tbodyMata) {
+                tbodyMata.innerHTML = '';
+                let targetText = (pct) => pct >= 75 ? `<span class="text-emerald-600 font-bold">● Hijau</span>` : pct >= 40 ? `<span class="text-amber-500 font-bold">● Kuning</span>` : `<span class="text-rose-600 font-bold">● Merah</span>`;
 
-            mataAnggaranList.forEach(m => {
-                let countMataProjects = 0;
-                let alokasiMata = 0;
-                let realisasiMata = 0;
+                mataAnggaranList.forEach(m => {
+                    let countMataProjects = 0;
+                    let alokasiMata = 0;
+                    let realisasiMata = 0;
 
-                // PERBAIKAN UTAMA: Kalkulasi langsung dari database proyek mentah agar sinkron 100% saat dropdown diganti
-                appData.rawProjects.forEach(p => {
-                    const matchWil = (currentW === "ALL" || p.wilayah === currentW);
-                    if (matchWil && p.mataAnggaran === m) {
-                        countMataProjects++;
-                        alokasiMata += p.alokasi || 0;
-                        realisasiMata += p.realisasi || 0;
-                    }
+                    appData.rawProjects.forEach(p => {
+                        const matchWil = (currentW === "ALL" || p.wilayah === currentW);
+                        if (matchWil && p.mataAnggaran === m) {
+                            countMataProjects++;
+                            alokasiMata += p.alokasi || 0;
+                            realisasiMata += p.realisasi || 0;
+                        }
+                    });
+
+                    const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
+
+                    tbodyMata.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3 font-semibold text-slate-700">${m}</td>
+                            <td class="p-3 text-slate-600 font-bold">${countMataProjects} Proyek</td>
+                            <td class="p-3">${formatIDR(alokasiMata)}</td>
+                            <td class="p-3 font-medium text-slate-800">${formatIDR(realisasiMata)}</td>
+                            <td class="p-3 text-[11px]">${targetText(pctMata)}</td>
+                        </tr>
+                    `;
                 });
-
-                const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
-
-                tbodyMata.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-semibold text-slate-700">${m}</td>
-                        <td class="p-3 text-slate-600 font-bold">${countMataProjects} Proyek</td>
-                        <td class="p-3">${formatIDR(alokasiMata)}</td>
-                        <td class="p-3 font-medium text-slate-800">${formatIDR(realisasiMata)}</td>
-                        <td class="p-3 text-[11px]">${targetText(pctMata)}</td>
-                    </tr>
-                `;
-            });
-
-            // RENDERING SEKTOR KANAN: Breakdown Detail Proyek Individu
-            const tbodyProject = document.getElementById('tbody-project-list');
-            tbodyProject.innerHTML = '';
-            document.getElementById('project-count-badge').innerText = `${filteredProjects.length} Proyek`;
-
-            if(filteredProjects.length === 0) {
-                tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
-                return;
             }
 
-            filteredProjects.forEach(p => {
-                const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
-                let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
+            // 2. Rendering Sektor Kanan (Breakdown List)
+            const tbodyProject = document.getElementById('tbody-project-list');
+            if(tbodyProject) {
+                tbodyProject.innerHTML = '';
+                const badgeEl = document.getElementById('project-count-badge');
+                if(badgeEl) badgeEl.innerText = `${filteredProjects.length} Proyek`;
 
-                tbodyProject.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
-                        <td class="p-3">
-                            <div class="text-xs font-mono text-cyan-700 font-bold">${p.id}</div>
-                            <div class="text-xs font-bold text-slate-800">${p.nama}</div>
-                            ${currentW === "ALL" ? `<div class="text-[10px] text-slate-400 font-medium">${p.wilayah}</div>` : ''}
-                        </td>
-                        <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
-                        <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
-                        <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
-                        <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(p.realisasi)}</td>
-                        <td class="p-3">
-                            <div class="flex flex-col items-center gap-1 min-w-[70px]">
-                                <span class="font-extrabold text-[11px]">${pPct.toFixed(0)}%</span>
-                                <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                    <div class="h-full ${barColor}" style="width: ${Math.min(pPct, 100)}%"></div>
+                if(filteredProjects.length === 0) {
+                    tbodyProject.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada detail project ditemukan untuk parameter filter saat ini.</td></tr>`;
+                    return;
+                }
+
+                filteredProjects.forEach(p => {
+                    const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
+                    let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
+
+                    tbodyProject.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
+                            <td class="p-3">
+                                <div class="text-xs font-mono text-cyan-700 font-bold">${p.id}</div>
+                                <div class="text-xs font-bold text-slate-800">${p.nama}</div>
+                                ${currentW === "ALL" ? `<div class="text-[10px] text-slate-400 font-medium">${p.wilayah}</div>` : ''}
+                            </td>
+                            <td class="p-3 text-slate-600 font-medium">${p.mataAnggaran}</td>
+                            <td class="p-3 text-right font-semibold text-slate-500 bg-slate-50/50">${formatIDR(p.estimasiAwal || 0)}</td>
+                            <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
+                            <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(p.realisasi)}</td>
+                            <td class="p-3">
+                                <div class="flex flex-col items-center gap-1 min-w-[70px]">
+                                    <span class="font-extrabold text-[11px]">${pPct.toFixed(0)}%</span>
+                                    <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                        <div class="h-full ${barColor}" style="width: ${Math.min(pPct, 100)}%"></div>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="p-3 text-center">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">${p.milestone || 'Tahap Konstruksi'}</span>
-                        </td>
-                    </tr>
-                `;
-            });
+                            </td>
+                            <td class="p-3 text-center">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">${p.milestone || 'Tahap Konstruksi'}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
         }
 
         function executeSwitching() {
@@ -559,55 +574,60 @@
 
         function renderSwitchingLogs() {
             const tbody = document.getElementById('tbody-log-switching');
-            tbody.innerHTML = '';
-            if(appData.switchingLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada aktivitas mutasi dana.</td></tr>';
-                return;
+            if(tbody) {
+                tbody.innerHTML = '';
+                if(appData.switchingLogs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada aktivitas mutasi dana.</td></tr>';
+                    return;
+                }
+                appData.switchingLogs.forEach(log => {
+                    tbody.innerHTML += `
+                        <tr class="text-xs">
+                            <td class="p-3 text-slate-400">${log.time}</td>
+                            <td class="p-3 text-rose-600 font-medium">${log.from}</td>
+                            <td class="p-3 text-emerald-600 font-medium">${log.to}</td>
+                            <td class="p-3 font-bold">${formatIDR(log.amount)}</td>
+                        </tr>
+                    `;
+                });
             }
-            appData.switchingLogs.forEach(log => {
-                tbody.innerHTML += `
-                    <tr class="text-xs">
-                        <td class="p-3 text-slate-400">${log.time}</td>
-                        <td class="p-3 text-rose-600 font-medium">${log.from}</td>
-                        <td class="p-3 text-emerald-600 font-medium">${log.to}</td>
-                        <td class="p-3 font-bold">${formatIDR(log.amount)}</td>
-                    </tr>
-                `;
-            });
         }
 
         function renderTimelineView() {
             const tbody = document.getElementById('tbody-timeline');
-            tbody.innerHTML = '';
+            if(tbody) {
+                tbody.innerHTML = '';
+                wilayahList.forEach(w => {
+                    const total = appData.alokasi[`${w}__Bangunan`] || 0;
+                    const realisasi = appData.realisasi[`${w}__Bangunan`] || 0;
+                    const pct = total > 0 ? (realisasi / total) * 100 : 0;
 
-            wilayahList.forEach(w => {
-                const total = appData.alokasi[`${w}__Bangunan`] || 0;
-                const realisasi = appData.realisasi[`${w}__Bangunan`] || 0;
-                const pct = total > 0 ? (realisasi / total) * 100 : 0;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3"><strong>${w}</strong><br><span class="text-[10px] text-slate-400">Komponen Alokasi Bangunan</span></td>
-                        <td class="p-3">${formatIDR(total*0.2)}<br><span class="text-[10px] text-slate-400">Plan: 20%</span></td>
-                        <td class="p-3">${formatIDR(total*0.3)}<br><span class="text-[10px] text-slate-400">Plan: 30%</span></td>
-                        <td class="p-3">${formatIDR(total*0.3)}<br><span class="text-[10px] text-slate-400">Plan: 30%</span></td>
-                        <td class="p-3">${formatIDR(total*0.2)}<br><span class="text-[10px] text-slate-400">Plan: 20%</span></td>
-                        <td class="p-3">
-                            <div class="timeline-track">
-                                <div class="timeline-bar rounded animate-pulse" style="width: ${Math.min(pct, 100)}%; background-color: var(--primary-color); height:100%"></div>
-                            </div>
-                            <span class="text-[10px] font-semibold text-slate-500">YTD Realisasi: ${pct.toFixed(0)}%</span>
-                        </td>
-                    </tr>
-                `;
-            });
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3"><strong>${w}</strong><br><span class="text-[10px] text-slate-400">Komponen Alokasi Bangunan</span></td>
+                            <td class="p-3">${formatIDR(total*0.2)}<br><span class="text-[10px] text-slate-400">Plan: 20%</span></td>
+                            <td class="p-3">${formatIDR(total*0.3)}<br><span class="text-[10px] text-slate-400">Plan: 30%</span></td>
+                            <td class="p-3">${formatIDR(total*0.3)}<br><span class="text-[10px] text-slate-400">Plan: 30%</span></td>
+                            <td class="p-3">${formatIDR(total*0.2)}<br><span class="text-[10px] text-slate-400">Plan: 20%</span></td>
+                            <td class="p-3">
+                                <div class="timeline-track">
+                                    <div class="timeline-bar rounded animate-pulse" style="width: ${Math.min(pct, 100)}%; background-color: var(--primary-color); height:100%"></div>
+                                </div>
+                                <span class="text-[10px] font-semibold text-slate-500">YTD Realisasi: ${pct.toFixed(0)}%</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
         }
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+            if(toast) {
+                toast.innerText = msg;
+                toast.style.display = 'block';
+                setTimeout(() => { toast.style.display = 'none'; }, 3000);
+            }
         }
 
         function exportToExcel() {
@@ -646,14 +666,19 @@
             const fW = document.getElementById('switch-from-wilayah');
             const tW = document.getElementById('switch-to-wilayah');
 
-            // Set default option 'ALL' di urutan pertama
-            fillFilter.innerHTML = `<option value="ALL">-- SEMUA WILAYAH GABUNGAN --</option>`;
+            if(fillFilter) {
+                fillFilter.innerHTML = `<option value="ALL">-- SEMUA WILAYAH GABUNGAN --</option>`;
+                wilayahList.forEach(w => {
+                    fillFilter.innerHTML += `<option value="${w}">${w}</option>`;
+                });
+            }
 
-            wilayahList.forEach(w => {
-                fillFilter.innerHTML += `<option value="${w}">${w}</option>`;
-                fW.innerHTML += `<option value="${w}">${w}</option>`;
-                tW.innerHTML += `<option value="${w}">${w}</option>`;
-            });
+            if(fW && tW) {
+                wilayahList.forEach(w => {
+                    fW.innerHTML += `<option value="${w}">${w}</option>`;
+                    tW.innerHTML += `<option value="${w}">${w}</option>`;
+                });
+            }
 
             fetchExternalData();
             lucide.createIcons();

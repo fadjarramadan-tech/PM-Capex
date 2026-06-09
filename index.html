@@ -324,7 +324,7 @@
                     apiStatusEl.innerText = "API Live Terkoneksi";
                 }
             } catch (e) {
-                console.warn("Koneksi gagal, memuat simulasi data proyek aktif:", e);
+                console.warn("Koneksi gagal, memuat database lokal:", e);
                 apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
                 apiStatusEl.innerText = "Mode Data Simulasi Aktif";
             }
@@ -345,11 +345,17 @@
             document.getElementById(tabId).classList.remove('hidden');
             event.currentTarget.classList.add('bg-slate-100', 'text-bni-teal', 'border-b-2', 'border-bni-teal');
             event.currentTarget.classList.remove('text-slate-500');
+            
+            // Pemicu render manual khusus saat tab dibuka untuk menghindari tabrakan fungsi render global
+            if(tabId === 'tab-wilayah') {
+                renderWilayahDetails();
+            }
         }
 
         function processDataAndRender() {
             const filterMata = document.getElementById('global-mata-anggaran').value;
             const gridContainer = document.getElementById('regional-metrics-grid');
+            if(!gridContainer) return;
             gridContainer.innerHTML = '';
 
             let grandAlokasi = 0, grandRealisasi = 0;
@@ -385,10 +391,11 @@
                     borderHighlight = "border-rose-300 shadow-sm shadow-rose-50"; 
                 }
 
-                // Cek isi hitungan aset dari API, jika 0 hitung dari rawProjects
-                let projectCount = appData.asetCount[w] || 0;
-                if(projectCount === 0 && appData.rawProjects.length > 0) {
+                let projectCount = 0;
+                if(appData.rawProjects.length > 0) {
                     projectCount = appData.rawProjects.filter(p => p.wilayah === w && (filterMata === 'ALL' || p.mataAnggaran === filterMata)).length;
+                } else {
+                    projectCount = appData.asetCount[w] || 0;
                 }
 
                 gridContainer.innerHTML += `
@@ -400,7 +407,6 @@
                             </div>
                             <div class="text-sm font-black text-slate-700 mb-3">${formatIDR(wilayahRealisasi)}</div>
                         </div>
-                        
                         <div class="mt-auto space-y-2">
                             <div class="flex justify-between items-center text-[11px] text-slate-400">
                                 <span>Konfirmasi Realisasi</span>
@@ -425,7 +431,7 @@
             const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
 
             const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
-            ewsGlobalText.innerText = `${agregatPct.toFixed(1)}%`;
+            if(ewsGlobalText) ewsGlobalText.innerText = `${agregatPct.toFixed(1)}%`;
 
             if(ewsGlobalCard) {
                 ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200";
@@ -442,21 +448,22 @@
             }
 
             document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
-
-            // Mencegah looping berantai tak terbatas saat inisialisasi awal halaman
-            if(document.getElementById('tab-wilayah').classList.contains('hidden') === false || appData.rawProjects.length > 0) {
-                renderWilayahDetails(true);
+            
+            // PENGAMAN ABSOLUT: Memutus rantai siklus melingkar infinite loop
+            if(document.getElementById('tab-wilayah').classList.contains('hidden') === false) {
+                renderWilayahDetails();
             }
             renderTimelineView();
         }
 
-        // SEKTOR YANG DIPERBAIKI (Dipecah logikanya agar tidak memicu rekursif loop)
-        function renderWilayahDetails(isInternalCall = false) {
-            const currentW = document.getElementById('select-filter-wilayah').value || "ALL";
+        function renderWilayahDetails() {
+            const selectEl = document.getElementById('select-filter-wilayah');
+            const currentW = selectEl ? selectEl.value : "ALL";
             const filterMata = document.getElementById('global-mata-anggaran').value;
-            const searchKeyword = document.getElementById('search-project-name').value.toLowerCase().trim();
             
-            // Filter Project Utama
+            const searchInput = document.getElementById('search-project-name');
+            const searchKeyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            
             const filteredProjects = appData.rawProjects.filter(p => {
                 const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
                 const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
@@ -464,7 +471,6 @@
                 return matchWilayah && matchMata && matchSearch;
             });
 
-            // 1. Rendering Sektor Kiri (Ringkasan Mata Anggaran)
             const tbodyMata = document.getElementById('tbody-detail-wilayah');
             if(tbodyMata) {
                 tbodyMata.innerHTML = '';
@@ -484,6 +490,13 @@
                         }
                     });
 
+                    // Fallback jika array projectList belum termuat sempurna dari server
+                    if(countMataProjects === 0 && currentW !== "ALL") {
+                        const key = `${currentW}__${m}`;
+                        alokasiMata = appData.alokasi[key] || 0;
+                        realisasiMata = appData.realisasi[key] || 0;
+                    }
+
                     const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
 
                     tbodyMata.innerHTML += `
@@ -498,7 +511,6 @@
                 });
             }
 
-            // 2. Rendering Sektor Kanan (Breakdown List)
             const tbodyProject = document.getElementById('tbody-project-list');
             if(tbodyProject) {
                 tbodyProject.innerHTML = '';
@@ -635,7 +647,9 @@
             wilayahList.forEach((w, index) => {
                 let a = 0, r = 0;
                 mataAnggaranList.forEach(m => { a += appData.alokasi[`${w}__${m}`]||0; r += appData.realisasi[`${w}__${m}`]||0; });
-                context += `<tr><td>${index+1}</td><td>${w}</td><td>${a}</td><td>${r}</td><td>${a-r}</td><td>${((r/a)*100).toFixed(2)}%</td></tr>`;
+                const s = a - r;
+                const p = a > 0 ? ((r/a)*100).toFixed(2) : "0.00";
+                context += `<tr><td>${index+1}</td><td>${w}</td><td>${a}</td><td>${r}</td><td>${s}</td><td>${p}%</td></tr>`;
             });
 
             const template = `

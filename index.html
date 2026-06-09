@@ -85,7 +85,7 @@
                 <div class="text-2xl font-black text-slate-800" id="sum-realisasi">Rp 0</div>
                 <div class="text-[11px] text-emerald-600 font-semibold mt-1" id="sum-realisasi-pct">0% Serapan</div>
             </div>
-            <div id="card-ews-status" class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-amber-500 border border-slate-200">
+            <div id="card-workspace-status" class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-amber-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Persentase Serapan Agregat</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-ews-text">0%</div>
                 <div class="text-[11px] text-slate-400 mt-1" id="sum-ews-desc">Formula: (Realisasi / Alokasi) x 100</div>
@@ -414,7 +414,7 @@
             document.getElementById('sum-alokasi').innerText = formatIDR(grandAlokasi);
             document.getElementById('sum-realisasi').innerText = formatIDR(grandRealisasi);
             
-            const ewsGlobalCard = document.getElementById('card-ews-status');
+            const ewsGlobalCard = document.getElementById('card-workspace-status');
             const ewsGlobalText = document.getElementById('sum-ews-text');
             const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
 
@@ -439,13 +439,13 @@
             renderTimelineView();
         }
 
-        // RE-DESIGN UTAMA: RENDERING TAB 2 DETAIL WILAYAH & SEARCHING BREAKDOWN
+        // PERBAIKAN TOTAL: PENYINKRONAN LOGIKA HITUNGAN AGREGAT PADA TAB 2
         function renderWilayahDetails() {
             const currentW = document.getElementById('select-filter-wilayah').value || "ALL";
             const filterMata = document.getElementById('global-mata-anggaran').value;
             const searchKeyword = document.getElementById('search-project-name').value.toLowerCase().trim();
             
-            // Filter Induk Proyek Berdasarkan Wilayah, Global Mata Anggaran, dan Keyword Search Box
+            // Filter Induk Proyek Berdasarkan Parameter Wilayah, Global Mata Anggaran, dan Keyword Search Box
             const filteredProjects = appData.rawProjects.filter(p => {
                 const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
                 const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
@@ -453,7 +453,7 @@
                 return matchWilayah && matchMata && matchSearch;
             });
 
-            // FITUR 3: Hitung Jumlah Proyek & Nominal per Mata Anggaran Khusus Wilayah Terpilih
+            // RENDERING SEKTOR KIRI: Menghitung Akumulasi Pos Anggaran Langsung dari Array Proyek Riil
             const tbodyMata = document.getElementById('tbody-detail-wilayah');
             tbodyMata.innerHTML = '';
             let targetText = (pct) => pct >= 75 ? `<span class="text-emerald-600 font-bold">● Hijau</span>` : pct >= 40 ? `<span class="text-amber-500 font-bold">● Kuning</span>` : `<span class="text-rose-600 font-bold">● Merah</span>`;
@@ -463,27 +463,15 @@
                 let alokasiMata = 0;
                 let realisasiMata = 0;
 
-                if (currentW === "ALL") {
-                    // Jika pilih "Semua Wilayah", kumpulkan metrik dari seluruh proyek terfilter
-                    appData.rawProjects.forEach(p => {
-                        if (p.mataAnggaran === m) {
-                            countMataProjects++;
-                            alokasiMata += p.alokasi || 0;
-                            realisasiMata += p.realisasi || 0;
-                        }
-                    });
-                } else {
-                    // Jika pilih wilayah spesifik
-                    const key = `${currentW}__${m}`;
-                    alokasiMata = appData.alokasi[key] || 0;
-                    realisasiMata = appData.realisasi[key] || 0;
-                    
-                    appData.rawProjects.forEach(p => {
-                        if (p.wilayah === currentW && p.mataAnggaran === m) {
-                            countMataProjects++;
-                        }
-                    });
-                }
+                // PERBAIKAN UTAMA: Kalkulasi langsung dari database proyek mentah agar sinkron 100% saat dropdown diganti
+                appData.rawProjects.forEach(p => {
+                    const matchWil = (currentW === "ALL" || p.wilayah === currentW);
+                    if (matchWil && p.mataAnggaran === m) {
+                        countMataProjects++;
+                        alokasiMata += p.alokasi || 0;
+                        realisasiMata += p.realisasi || 0;
+                    }
+                });
 
                 const pctMata = alokasiMata > 0 ? (realisasiMata / alokasiMata) * 100 : 0;
 
@@ -498,7 +486,7 @@
                 `;
             });
 
-            // 2. Render Tabel Breakdown Project Kanan
+            // RENDERING SEKTOR KANAN: Breakdown Detail Proyek Individu
             const tbodyProject = document.getElementById('tbody-project-list');
             tbodyProject.innerHTML = '';
             document.getElementById('project-count-badge').innerText = `${filteredProjects.length} Proyek`;
@@ -658,7 +646,7 @@
             const fW = document.getElementById('switch-from-wilayah');
             const tW = document.getElementById('switch-to-wilayah');
 
-            // FITUR 1: Tambahkan opsi "Semua Wilayah" di posisi paling atas dropdown Tab 2
+            // Set default option 'ALL' di urutan pertama
             fillFilter.innerHTML = `<option value="ALL">-- SEMUA WILAYAH GABUNGAN --</option>`;
 
             wilayahList.forEach(w => {

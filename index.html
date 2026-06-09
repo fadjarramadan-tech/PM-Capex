@@ -47,7 +47,7 @@
             <span id="lock-status-badge" class="px-3 py-1 rounded-full text-xs font-bold transition-all duration-300">
                 Memeriksa Proteksi...
             </span>
-            <span id="api-status" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+            <span id="api-status" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                 Menghubungkan API Data...
             </span>
         </div>
@@ -55,6 +55,7 @@
 
     <div class="container mx-auto p-5 max-w-[1600px]">
         
+        <!-- Tabs -->
         <div class="flex bg-white p-2 rounded-t-xl border-b border-slate-200 gap-2 overflow-x-auto">
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
@@ -62,6 +63,7 @@
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
         </div>
 
+        <!-- Filter Global -->
         <div class="bg-white p-4 rounded-b-xl shadow-sm border-x border-b border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
             <div class="flex flex-col gap-1">
                 <label class="text-xs font-bold text-slate-400 uppercase">Filter Mata Anggaran</label>
@@ -78,6 +80,7 @@
             </button>
         </div>
 
+        <!-- Scorecards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi CAPEX (Rp Juta)</div>
@@ -101,8 +104,10 @@
             </div>
         </div>
 
-        <div id="tab-" class="tab-content content-segment space-y-6">
+        <!-- TAB 1: DASHBOARD -->
+        <div id="tab-dashboard" class="tab-content content-segment space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Sisi Kiri: Progres Per Wilayah -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                     <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="trending-up" class="w-4 h-4 text-amber-500"></i>
@@ -111,6 +116,7 @@
                     <div id="regional-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1"></div>
                 </div>
 
+                <!-- Sisi Kanan: Grafik Batang Horizontal Tumpuk -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
                     <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyan-600"></i>
@@ -122,6 +128,7 @@
                 </div>
             </div>
 
+            <!-- Top 5 Project Urgent -->
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-rose-700 flex items-center gap-1.5 uppercase tracking-wide">
@@ -149,6 +156,7 @@
             </div>
         </div>
 
+        <!-- TAB 2: DETAIL INDIVIDU PROJECT -->
         <div id="tab-wilayah" class="tab-content content-segment hidden">
             <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col md:flex-row gap-4 items-end mb-4">
                 <div class="flex flex-col gap-1 w-full max-w-xs">
@@ -167,6 +175,7 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <!-- Ringkasan Kiri -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-fit">
                     <div class="p-4 bg-slate-50 border-b border-slate-200">
                         <h3 class="font-bold text-sm text-slate-700">Ringkasan Pos Mata Anggaran</h3>
@@ -187,6 +196,7 @@
                     </div>
                 </div>
 
+                <!-- Breakdown Kanan -->
                 <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                     <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center z-10">
                         <h3 class="font-bold text-sm text-bni-teal uppercase tracking-wide flex items-center gap-2">
@@ -215,6 +225,7 @@
             </div>
         </div>
 
+        <!-- TAB 3: SWITCHING ANGGARAN -->
         <div id="tab-switching" class="tab-content content-segment hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -285,6 +296,7 @@
             </div>
         </div>
 
+        <!-- TAB 4: TIMELINE -->
         <div id="tab-timeline" class="tab-content content-segment hidden">
             <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                 <h3 class="font-bold text-sm text-bni-teal mb-3 uppercase">Timeline & Kurva Target Penyerapan (1 Tahun Anggaran - Dalam Rp Juta)</h3>
@@ -308,6 +320,7 @@
 
     </div>
 
+    <!-- MODAL POP-UP EDIT -->
     <div id="modal-edit-project" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-lg w-full overflow-hidden flex flex-col transform transition-transform scale-100">
             <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
@@ -358,7 +371,6 @@
             tanggalSelesaiTerbuka: 5    
         };
 
-        // PENYESUAIAN: Perbaikan ejaan kata "Palmebang" menjadi "Palembang" pada indeks ke-2
         const wilayahList = [
             "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palembang)", 
             "Wilayah 04 (Bandung)", "Wilayah 05 (Semarang)", "Wilayah 06 (Surabaya)", 
@@ -459,13 +471,12 @@
             processDataAndRender();
         }
 
-        // OPTIMASI FORMULA: Mengubah Satuan Angka dari Rupiah Penuh menjadi dalam Juta
         function formatIDR(val) {
-            // Membagi nilai nominal dengan 1.000.000 untuk konversi ke satuan jutaan rupiah
             const nilaiDalamJuta = Math.round(val / 1000000);
             return 'Rp ' + nilaiDalamJuta.toLocaleString('id-ID');
         }
 
+        // PERBAIKAN UTAMA: Manajemen tab dikonfigurasi mandiri tanpa tabrakan siklus render
         function switchTab(event, tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
@@ -477,7 +488,10 @@
             event.currentTarget.classList.add('bg-slate-100', 'text-bni-teal', 'border-b-2', 'border-bni-teal');
             event.currentTarget.classList.remove('text-slate-500');
 
-            if (tabId === 'tab-wilayah') {
+            // SOLUSI: Jalankan fungsi render spesifik masing-masing objek tujuan
+            if (tabId === 'tab-dashboard') {
+                processDataAndRender(); // Re-render Dashboard, grafik, dan tabel proyek urgent secara utuh
+            } else if (tabId === 'tab-wilayah') {
                 renderWilayahDetails();
             } else if (tabId === 'tab-timeline') {
                 renderTimelineView();
@@ -618,6 +632,7 @@
 
             renderStackedHorizontalChart(chartRawData);
             renderTopUrgentProjects();
+            renderTimelineView();
         }
 
         function renderStackedHorizontalChart(chartRawData) {
@@ -631,7 +646,6 @@
 
             const sortedLabels = chartRawData.map(item => item.wilayahLabel);
             
-            // Konversi nilai mentah grafik ke dalam satuan juta agar sinkron dengan tabel
             const dataTanah = chartRawData.map(item => Math.round(item.breakdown["Tanah"] / 1000000));
             const dataBangunan = chartRawData.map(item => Math.round(item.breakdown["Bangunan"] / 1000000));
             const dataPerbotan = chartRawData.map(item => Math.round(item.breakdown["Perbotan Non Otomasi"] / 1000000));
@@ -859,8 +873,6 @@
             document.getElementById('modal-info-mata').innerText = p.mataAnggaran;
             document.getElementById('modal-info-estimasi').innerText = formatIDR(p.estimasiAwal || 0);
             document.getElementById('modal-info-alokasi').innerText = formatIDR(p.alokasi);
-            
-            // Catatan: Form input modal tetap menerima input rupiah penuh agar operator wilayah tidak bingung
             document.getElementById('modal-input-realisasi').value = p.realisasi;
 
             const milestoneSelect = document.getElementById('modal-select-milestone');
@@ -1045,7 +1057,6 @@
                 mataAnggaranList.forEach(m => { a += appData.alokasi[`${w}__${m}`]||0; r += appData.realisasi[`${w}__${m}`]||0; });
                 const s = a - r;
                 
-                // Konversi data ekspor excel ke satuan juta agar seragam dengan UI web app
                 const aJuta = Math.round(a / 1000000);
                 const rJuta = Math.round(r / 1000000);
                 const sJuta = Math.round(s / 1000000);

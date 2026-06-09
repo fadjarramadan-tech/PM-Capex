@@ -7,6 +7,7 @@
     <link class="rounded-sm" rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #005E6A;
@@ -76,9 +77,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Anggaran</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Pagu</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-alokasi">Rp 0</div>
-                <div class="text-[11px] text-slate-400 mt-1">Alokasi Maksimal CAPEX Wil-Cab</div>
+                <div class="text-[11px] text-slate-400 mt-1">Plavon anggaran induk gabungan</div>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-emerald-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Realisasi YTD</div>
@@ -87,7 +88,6 @@
             </div>
             <div id="card-workspace-status" class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-amber-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Persentase Serapan Agregat</div>
-                <div class="text-2xl font-black text-slate-800" id="sum-text-sisa" style="display:none;">Rp 0</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-ews-text">0%</div>
                 <div class="text-[11px] text-slate-400 mt-1" id="sum-ews-desc">Formula: (Realisasi / Alokasi) x 100</div>
             </div>
@@ -98,13 +98,52 @@
             </div>
         </div>
 
-        <div id="tab-dashboard" class="tab-content content-segment">
+        <div id="tab-dashboard" class="tab-content content-segment space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-amber-500"></i>
+                        Matriks Progress Per Wilayah
+                    </h3>
+                    <div id="regional-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyan-600"></i>
+                        Grafik Ranking Penyerapan Anggaran Wilayah Tertinggi (IDR)
+                    </h3>
+                    <div class="w-full flex-1 min-h-[350px] relative flex items-center justify-center">
+                        <canvas id="chart-ranking-wilayah"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-                <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
-                    <i data-lucide="trending-up" class="w-5 h-5 text-amber-500"></i>
-                    Matriks Progress Per Wilayah
-                </h3>
-                <div id="regional-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4"></div>
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-rose-700 flex items-center gap-1.5 uppercase tracking-wide">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
+                        Top 5 Project Urgent (Alokasi Besar - Penyerapan Kritis Terendah)
+                    </h3>
+                    <span class="bg-rose-50 text-rose-700 font-bold text-[11px] px-2 py-0.5 rounded border border-rose-100">Atensi Direktur Sektor</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                <th class="p-3 font-bold">ID & Nama Proyek Urgent</th>
+                                <th class="p-3 font-bold">Wilayah Operasional</th>
+                                <th class="p-3 font-bold">Mata Anggaran</th>
+                                <th class="p-3 font-bold text-right">Alokasi Akhir (Rp)</th>
+                                <th class="p-3 font-bold text-right">Realisasi YTD (Rp)</th>
+                                <th class="p-3 font-bold text-center">Persentase Serapan</th>
+                                <th class="p-3 font-bold text-center">Sinyal EWS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-top-urgent-projects" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -270,7 +309,7 @@
 
     <script>
         const wilayahList = [
-            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palembang)", 
+            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palmebang)", 
             "Wilayah 04 (Bandung)", "Wilayah 05 (Semarang)", "Wilayah 06 (Surabaya)", 
             "Wilayah 07 (Makassar)", "Wilayah 08 (Denpasar)", "Wilayah 09 (Banjarmasin)", 
             "Wilayah 10 (Jakarta Kemayoran)", "Wilayah 11 (Manado)", "Wilayah 12 (Jakarta Kota)", 
@@ -287,6 +326,9 @@
             rawProjects: [], 
             switchingLogs: []
         };
+
+        // Variable global penampung instance grafik Chart.js agar bisa di-destroy secara aman
+        let globalRankingChartInstance = null;
 
         function initBaseData() {
             appData.alokasi = {};
@@ -323,7 +365,7 @@
                     apiStatusEl.innerText = "API Live Terkoneksi";
                 }
             } catch (e) {
-                console.warn("Koneksi gagal, memuat data lokal:", e);
+                console.warn("Koneksi gagal, memuat data simulasi lokal:", e);
                 apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
                 apiStatusEl.innerText = "Mode Data Simulasi Aktif";
             }
@@ -367,6 +409,8 @@
             gridContainer.innerHTML = '';
 
             let grandAlokasi = 0, grandRealisasi = 0;
+            let chartLabels = [];
+            let chartDataValues = [];
 
             wilayahList.forEach((w) => {
                 let wilayahAlokasi = 0, wilayahRealisasi = 0;
@@ -382,6 +426,10 @@
                 const pct = wilayahAlokasi > 0 ? (wilayahRealisasi / wilayahAlokasi) * 100 : 0;
                 grandAlokasi += wilayahAlokasi;
                 grandRealisasi += wilayahRealisasi;
+
+                // Simpan data untuk kebutuhan render grafik barchart vertikal ranking
+                chartLabels.push(w.split(' ')[0] + ' ' + (w.split(' ')[1] || '')); 
+                chartDataValues.push({ wilayah: w, realisasi: wilayahRealisasi, alokasi: wilayahAlokasi });
 
                 let ewsBadgeStyle = "";
                 let progressColorStyle = "bg-teal-700";
@@ -417,14 +465,14 @@
                         </div>
                         <div class="mt-auto space-y-2">
                             <div class="flex justify-between items-center text-[11px] text-slate-400">
-                                <span>Progress Realisasi</span>
+                                <span>Konfirmasi Serapan</span>
                                 <span class="font-bold text-slate-700">${pct.toFixed(0)}%</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                 <div class="progress-bar-custom h-full ${progressColorStyle}" style="width: ${Math.min(pct, 100)}%"></div>
                             </div>
                             <div class="text-[10px] font-bold border rounded py-0.5 px-2 text-center mt-1.5 ${ewsBadgeStyle}">
-                                ${pct >= 75 ? 'GREEN: Healthy' : pct >= 40 ? 'YELLOW: Warning' : 'RED: Critical'} (${pct.toFixed(1)}%)
+                                ${pct >= 75 ? 'GREEN' : pct >= 40 ? 'YELLOW' : 'RED'} (${pct.toFixed(1)}%)
                             </div>
                         </div>
                     </div>
@@ -435,7 +483,7 @@
             document.getElementById('sum-realisasi').innerText = formatIDR(grandRealisasi);
             
             const ewsGlobalCard = document.getElementById('card-workspace-status');
-            const ewsGlobalText = document.getElementById('sum-text-sisa' || 'sum-ews-text');
+            const ewsGlobalText = document.getElementById('sum-ews-text');
             const ewsGlobalDesc = document.getElementById('sum-ews-desc'); 
 
             const agregatPct = grandAlokasi > 0 ? (grandRealisasi / grandAlokasi) * 100 : 0;
@@ -455,10 +503,144 @@
                 }
             }
 
-            const sisaEl = document.getElementById('sum-sisa');
-            if(sisaEl) sisaEl.innerText = formatIDR(grandAlokasi - grandRealisasi);
+            document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
             
-            renderTimelineView();
+            // Pemicu pembuatan komponen baru vertikal barchart & Top 5 urgent project
+            renderRankingChart(chartDataValues);
+            renderTopUrgentProjects();
+        }
+
+        // FITUR 1: Render Grafik Vertikal Batang Ranking Penyerapan Anggaran Tertinggi (Chart.js)
+        function renderRankingChart(rawChartData) {
+            // Urutkan data wilayah berdasarkan nominal realisasi tertinggi ke terendah
+            rawChartData.sort((a, b) => b.realisasi - a.realisasi);
+
+            const ctx = document.getElementById('chart-ranking-wilayah');
+            if (!ctx) return;
+
+            // Jika instance grafik sudah ada sebelumnya, hancurkan agar tidak tumpang tindih
+            if (globalRankingChartInstance) {
+                globalRankingChartInstance.destroy();
+            }
+
+            const sortedLabels = rawChartData.map(item => item.wilayah.split(' ')[0] + ' ' + (item.wilayah.split(' ')[1] || ''));
+            const sortedRealisasi = rawChartData.map(item => item.realisasi);
+
+            globalRankingChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedLabels,
+                    datasets: [{
+                        label: 'Realisasi Anggaran YTD (Rp)',
+                        data: sortedRealisasi,
+                        backgroundColor: '#005E6A',
+                        hoverBackgroundColor: '#008B9B',
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Realisasi: ' + formatIDR(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#E2E8F0' },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1e9) return 'Rp ' + (value / 1e9).toFixed(1) + ' M';
+                                    return 'Rp ' + (value / 1e6).toFixed(0) + ' Jt';
+                                },
+                                font: { size: 10 }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // FITUR 2: Menampilkan Top 5 Nama Project Urgent Anggaran Besar dengan Penyerapan Terendah
+        function renderTopUrgentProjects() {
+            const tbodyUrgent = document.getElementById('tbody-top-urgent-projects');
+            if (!tbodyUrgent) return;
+            tbodyUrgent.innerHTML = "";
+
+            if (appData.rawProjects.length === 0) {
+                tbodyUrgent.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">Database rincian proyek kosong / belum terhubung dari API Google Sheets.</td></tr>`;
+                return;
+            }
+
+            // Copy array agar tidak merusak state data asli
+            let sortedProjects = [...appData.rawProjects];
+
+            // Filter proyek yang memiliki alokasi anggaran valid (menghindari division by zero)
+            sortedProjects = sortedProjects.filter(p => p.alokasi > 0);
+
+            // Logika Urgensi: Urutkan berdasarkan PERSENTASE SERAPAN TERENDAH, kemudian ALOKASI PAGU TERBESAR
+            sortedProjects.sort((a, b) => {
+                const pctA = (a.realisasi / a.alokasi) * 100;
+                const pctB = (b.realisasi / b.alokasi) * 100;
+                if (pctA !== pctB) {
+                    return pctA - pctB; // Serapan terendah diprioritaskan naik ke atas
+                }
+                return b.alokasi - a.alokasi; // Jika persentase serapan sama, alokasi terbesar naik ke atas
+            });
+
+            // Ambil peringkat Top 5 teratas
+            const top5Projects = sortedProjects.slice(0, 5);
+            let urgentHtml = "";
+
+            top5Projects.forEach(p => {
+                const pct = (p.realisasi / p.alokasi) * 100;
+                
+                // Set lambang EWS lampu indikator
+                let ewsBadge = "";
+                if (pct >= 75) {
+                    ewsBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">● GREEN</span>`;
+                } else if (pct >= 40) {
+                    ewsBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">● YELLOW</span>`;
+                } else {
+                    ewsBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">● RED CRITICAL</span>`;
+                }
+
+                urgentHtml += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3">
+                            <div class="text-xs font-mono font-bold text-cyan-800">${p.id}</div>
+                            <div class="text-xs font-bold text-slate-800">${p.nama}</div>
+                        </td>
+                        <td class="p-3 text-slate-600 font-medium">${p.wilayah}</td>
+                        <td class="p-3 text-slate-500">${p.mataAnggaran}</td>
+                        <td class="p-3 text-right font-semibold text-slate-700">${formatIDR(p.alokasi)}</td>
+                        <td class="p-3 text-right font-medium text-slate-600">${formatIDR(p.realisasi)}</td>
+                        <td class="p-3 text-center">
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="font-black text-rose-600">${pct.toFixed(1)}%</span>
+                                <div class="w-16 bg-slate-100 h-1 rounded-full overflow-hidden">
+                                    <div class="h-full bg-rose-500" style="width: ${Math.min(pct, 100)}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-3 text-center">${ewsBadge}</td>
+                    </tr>
+                `;
+            });
+
+            tbodyUrgent.innerHTML = urgentHtml;
         }
 
         function renderWilayahDetails() {
@@ -518,6 +700,7 @@
 
             const tbodyProject = document.getElementById('tbody-project-list');
             if(tbodyProject) {
+                tbodyProject.innerHTML = '';
                 const badgeEl = document.getElementById('project-count-badge');
                 if(badgeEl) badgeEl.innerText = `${filteredProjects.length} Proyek`;
 

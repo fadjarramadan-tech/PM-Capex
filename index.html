@@ -53,7 +53,7 @@
     <div class="container mx-auto p-5 max-w-[1600px]">
         
         <div class="flex bg-white p-2 rounded-t-xl border-b border-slate-200 gap-2 overflow-x-auto">
-            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard & Gabungan</button>
+            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-switching')">Mekanisme Switching Anggaran</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
@@ -77,9 +77,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Pagu</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi CAPEX</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-alokasi">Rp 0</div>
-                <div class="text-[11px] text-slate-400 mt-1">Plavon anggaran induk gabungan</div>
+                <div class="text-[11px] text-slate-400 mt-1">Anggaran Maksimal Wil-Cab</div>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-emerald-500 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Realisasi YTD</div>
@@ -123,7 +123,7 @@
                 <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-rose-700 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
-                        Top 5 Project Urgent (Alokasi Besar - Penyerapan Kritis Terendah)
+                        Top 5 Project Urgent (Alokasi Besar - Penyerapan Terendah)
                     </h3>
                     <span class="bg-rose-50 text-rose-700 font-bold text-[11px] px-2 py-0.5 rounded border border-rose-100">Atensi Direktur Sektor</span>
                 </div>
@@ -472,7 +472,7 @@
                         </div>
                         <div class="mt-auto space-y-2">
                             <div class="flex justify-between items-center text-[11px] text-slate-400">
-                                <span>Konfirmasi Serapan</span>
+                                <span>Progress Serapan</span>
                                 <span class="font-bold text-slate-700">${pct.toFixed(0)}%</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">

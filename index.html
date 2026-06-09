@@ -105,15 +105,15 @@
                         <i data-lucide="trending-up" class="w-4 h-4 text-amber-500"></i>
                         Matriks Progress Per Wilayah
                     </h3>
-                    <div id="regional-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1"></div>
+                    <div id="regional-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1"></div>
                 </div>
 
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
                     <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyan-600"></i>
-                        Grafik Ranking Penyerapan Anggaran Wilayah Tertinggi (IDR)
+                        Grafik Ranking Penyerapan Anggaran Wilayah Tertinggi (Stacked Bar)
                     </h3>
-                    <div class="w-full flex-1 min-h-[350px] relative flex items-center justify-center">
+                    <div class="w-full flex-1 min-h-[460px] max-h-[520px] relative">
                         <canvas id="chart-ranking-wilayah"></canvas>
                     </div>
                 </div>
@@ -140,8 +140,7 @@
                                 <th class="p-3 font-bold text-center">Sinyal EWS</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-top-urgent-projects" class="divide-y divide-slate-100">
-                            </tbody>
+                        <tbody id="tbody-top-urgent-projects" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -327,7 +326,6 @@
             switchingLogs: []
         };
 
-        // Variable global penampung instance grafik Chart.js agar bisa di-destroy secara aman
         let globalRankingChartInstance = null;
 
         function initBaseData() {
@@ -409,17 +407,23 @@
             gridContainer.innerHTML = '';
 
             let grandAlokasi = 0, grandRealisasi = 0;
-            let chartLabels = [];
-            let chartDataValues = [];
+            let chartRawData = [];
 
             wilayahList.forEach((w) => {
                 let wilayahAlokasi = 0, wilayahRealisasi = 0;
+                let breakdownMata = { "Tanah": 0, "Bangunan": 0, "Perbotan Non Otomasi": 0, "Kendaraan": 0 };
 
                 mataAnggaranList.forEach(m => {
+                    const key = `${w}__${m}`;
+                    const alokasiVal = appData.alokasi[key] || 0;
+                    const realisasiVal = appData.realisasi[key] || 0;
+
+                    // Catat realisasi pos anggaran untuk visualisasi Stacked Bar
+                    breakdownMata[m] = realisasiVal;
+
                     if (filterMata === 'ALL' || filterMata === m) {
-                        const key = `${w}__${m}`;
-                        wilayahAlokasi += appData.alokasi[key] || 0;
-                        wilayahRealisasi += appData.realisasi[key] || 0;
+                        wilayahAlokasi += alokasiVal;
+                        wilayahRealisasi += realisasiVal;
                     }
                 });
 
@@ -427,9 +431,12 @@
                 grandAlokasi += wilayahAlokasi;
                 grandRealisasi += wilayahRealisasi;
 
-                // Simpan data untuk kebutuhan render grafik barchart vertikal ranking
-                chartLabels.push(w.split(' ')[0] + ' ' + (w.split(' ')[1] || '')); 
-                chartDataValues.push({ wilayah: w, realisasi: wilayahRealisasi, alokasi: wilayahAlokasi });
+                // Tampung objek data untuk diolah grafik stacked horizontal
+                chartRawData.push({
+                    wilayahLabel: w.split(' ')[0] + ' ' + (w.split(' ')[1] || ''),
+                    totalRealisasi: wilayahRealisasi,
+                    breakdown: breakdownMata
+                });
 
                 let ewsBadgeStyle = "";
                 let progressColorStyle = "bg-teal-700";
@@ -503,119 +510,114 @@
                 }
             }
 
-            document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
+            const sisaEl = document.getElementById('sum-sisa');
+            if(sisaEl) sisaEl.innerText = formatIDR(grandAlokasi - grandRealisasi);
             
-            // Pemicu pembuatan komponen baru vertikal barchart & Top 5 urgent project
-            renderRankingChart(chartDataValues);
+            // Panggil fungsi render baru Stacked Bar Horizontal
+            renderStackedHorizontalChart(chartRawData);
             renderTopUrgentProjects();
         }
 
-        // FITUR 1: Render Grafik Vertikal Batang Ranking Penyerapan Anggaran Tertinggi (Chart.js)
-        function renderRankingChart(rawChartData) {
-            // Urutkan data wilayah berdasarkan nominal realisasi tertinggi ke terendah
-            rawChartData.sort((a, b) => b.realisasi - a.realisasi);
+        // FITUR UTAMA: Merender Stacked Bar Chart Horizontal Terurut Serapan Tertinggi
+        function renderStackedHorizontalChart(chartRawData) {
+            // Urutkan data dari total realisasi tertinggi ke terendah (Peringkat Atas)
+            chartRawData.sort((a, b) => b.totalRealisasi - a.totalRealisasi);
 
             const ctx = document.getElementById('chart-ranking-wilayah');
             if (!ctx) return;
 
-            // Jika instance grafik sudah ada sebelumnya, hancurkan agar tidak tumpang tindih
             if (globalRankingChartInstance) {
                 globalRankingChartInstance.destroy();
             }
 
-            const sortedLabels = rawChartData.map(item => item.wilayah.split(' ')[0] + ' ' + (item.wilayah.split(' ')[1] || ''));
-            const sortedRealisasi = rawChartData.map(item => item.realisasi);
+            // Ekstrak label wilayah hasil pengurutan tertinggi
+            const sortedLabels = chartRawData.map(item => item.wilayahLabel);
+
+            // Petakan realisasi masing-masing komponen mata anggaran secara urut
+            const dataTanah = chartRawData.map(item => item.breakdown["Tanah"]);
+            const dataBangunan = chartRawData.map(item => item.breakdown["Bangunan"]);
+            const dataPerbotan = chartRawData.map(item => item.breakdown["Perbotan Non Otomasi"]);
+            const dataKendaraan = chartRawData.map(item => item.breakdown["Kendaraan"]);
 
             globalRankingChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: sortedLabels,
-                    datasets: [{
-                        label: 'Realisasi Anggaran YTD (Rp)',
-                        data: sortedRealisasi,
-                        backgroundColor: '#005E6A',
-                        hoverBackgroundColor: '#008B9B',
-                        borderRadius: 6,
-                        borderWidth: 0
-                    }]
+                    datasets: [
+                        { label: '1. Tanah', data: dataTanah, backgroundColor: '#E28743' },
+                        { label: '2. Bangunan', data: dataBangunan, backgroundColor: '#005E6A' },
+                        { label: '3. Perbotan Non Otomasi', data: dataPerbotan, backgroundColor: '#008B9B' },
+                        { label: '4. Kendaraan', data: dataKendaraan, backgroundColor: '#76A5AF' }
+                    ]
                 },
                 options: {
+                    indexAxis: 'y', // MERUBAH GRAFIK MENJADI HORIZONTAL
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { boxWidth: 12, font: { size: 10 } }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return ' Realisasi: ' + formatIDR(context.raw);
+                                    return ` ${context.dataset.label}: ${formatIDR(context.raw)}`;
                                 }
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#E2E8F0' },
+                        x: {
+                            stacked: true, // MENGAKTIFKAN FORMAT TUMPUK (STACKED)
+                            grid: { color: '#F1F5F9' },
                             ticks: {
                                 callback: function(value) {
                                     if (value >= 1e9) return 'Rp ' + (value / 1e9).toFixed(1) + ' M';
                                     return 'Rp ' + (value / 1e6).toFixed(0) + ' Jt';
                                 },
-                                font: { size: 10 }
+                                font: { size: 9 }
                             }
                         },
-                        x: {
+                        y: {
+                            stacked: true, // MENGAKTIFKAN FORMAT TUMPUK (STACKED)
                             grid: { display: false },
-                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 9 } }
+                            ticks: { font: { size: 10, weight: 'bold' } }
                         }
                     }
                 }
             });
         }
 
-        // FITUR 2: Menampilkan Top 5 Nama Project Urgent Anggaran Besar dengan Penyerapan Terendah
         function renderTopUrgentProjects() {
             const tbodyUrgent = document.getElementById('tbody-top-urgent-projects');
             if (!tbodyUrgent) return;
             tbodyUrgent.innerHTML = "";
 
             if (appData.rawProjects.length === 0) {
-                tbodyUrgent.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">Database rincian proyek kosong / belum terhubung dari API Google Sheets.</td></tr>`;
+                tbodyUrgent.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">Database rincian proyek kosong / belum terhubung.</td></tr>`;
                 return;
             }
 
-            // Copy array agar tidak merusak state data asli
-            let sortedProjects = [...appData.rawProjects];
+            let sortedProjects = [...appData.rawProjects].filter(p => p.alokasi > 0);
 
-            // Filter proyek yang memiliki alokasi anggaran valid (menghindari division by zero)
-            sortedProjects = sortedProjects.filter(p => p.alokasi > 0);
-
-            // Logika Urgensi: Urutkan berdasarkan PERSENTASE SERAPAN TERENDAH, kemudian ALOKASI PAGU TERBESAR
             sortedProjects.sort((a, b) => {
                 const pctA = (a.realisasi / a.alokasi) * 100;
                 const pctB = (b.realisasi / b.alokasi) * 100;
-                if (pctA !== pctB) {
-                    return pctA - pctB; // Serapan terendah diprioritaskan naik ke atas
-                }
-                return b.alokasi - a.alokasi; // Jika persentase serapan sama, alokasi terbesar naik ke atas
+                if (pctA !== pctB) return pctA - pctB; 
+                return b.alokasi - a.alokasi; 
             });
 
-            // Ambil peringkat Top 5 teratas
             const top5Projects = sortedProjects.slice(0, 5);
             let urgentHtml = "";
 
             top5Projects.forEach(p => {
                 const pct = (p.realisasi / p.alokasi) * 100;
-                
-                // Set lambang EWS lampu indikator
-                let ewsBadge = "";
-                if (pct >= 75) {
-                    ewsBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">● GREEN</span>`;
-                } else if (pct >= 40) {
-                    ewsBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">● YELLOW</span>`;
-                } else {
-                    ewsBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">● RED CRITICAL</span>`;
-                }
+                let ewsBadge = pct >= 75 ? 
+                    `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">● GREEN</span>` : pct >= 40 ? 
+                    `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">● YELLOW</span>` : 
+                    `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">● RED CRITICAL</span>`;
 
                 urgentHtml += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -639,7 +641,6 @@
                     </tr>
                 `;
             });
-
             tbodyUrgent.innerHTML = urgentHtml;
         }
 

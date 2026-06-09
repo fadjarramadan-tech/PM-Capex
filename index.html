@@ -44,7 +44,6 @@
             <i data-lucide="line-chart"></i> Sistem Monitoring Realisasi Anggaran Investasi (CAPEX)
         </h1>
         <div class="flex items-center gap-3">
-            <!-- FITUR BARU: Badge Status Proteksi Periode Input Real-Time -->
             <span id="lock-status-badge" class="px-3 py-1 rounded-full text-xs font-bold transition-all duration-300">
                 Memeriksa Proteksi...
             </span>
@@ -56,15 +55,13 @@
 
     <div class="container mx-auto p-5 max-w-[1600px]">
         
-        <!-- Tabs -->
         <div class="flex bg-white p-2 rounded-t-xl border-b border-slate-200 gap-2 overflow-x-auto">
-            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard & Gabungan</button>
+            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-switching')">Mekanisme Switching Anggaran</button>
             <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
         </div>
 
-        <!-- Filter Global -->
         <div class="bg-white p-4 rounded-b-xl shadow-sm border-x border-b border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
             <div class="flex flex-col gap-1">
                 <label class="text-xs font-bold text-slate-400 uppercase">Filter Mata Anggaran</label>
@@ -81,15 +78,14 @@
             </button>
         </div>
 
-        <!-- Scorecards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi Pagu</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi CAPEX (Rp Juta)</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-alokasi">Rp 0</div>
-                <div class="text-[11px] text-slate-400 mt-1">Plavon anggaran induk gabungan</div>
+                <div class="text-[11px] text-slate-400 mt-1">Anggaran Maksimum Wil-Cab</div>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-emerald-500 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Realisasi YTD</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Realisasi YTD (Rp Juta)</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-realisasi">Rp 0</div>
                 <div class="text-[11px] text-emerald-600 font-semibold mt-1" id="sum-realisasi-pct">0% Serapan</div>
             </div>
@@ -99,19 +95,18 @@
                 <div class="text-[11px] text-slate-400 mt-1" id="sum-ews-desc">Formula: (Realisasi / Alokasi) x 100</div>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-indigo-500 border border-slate-200">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Sisa Plafon Anggaran</div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Anggaran Belum Terserap (Rp Juta)</div>
                 <div class="text-2xl font-black text-slate-800" id="sum-sisa">Rp 0</div>
-                <div class="text-[11px] text-slate-400 mt-1">Siap untuk switching/alokasi</div>
+                <div class="text-[11px] text-slate-400 mt-1">Siap untuk switching</div>
             </div>
         </div>
 
-        <!-- TAB 1 -->
-        <div id="tab-dashboard" class="tab-content content-segment space-y-6">
+        <div id="tab-" class="tab-content content-segment space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                     <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="trending-up" class="w-4 h-4 text-amber-500"></i>
-                        Matriks Progress Per Wilayah
+                        Progres Per Wilayah
                     </h3>
                     <div id="regional-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1"></div>
                 </div>
@@ -119,7 +114,7 @@
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
                     <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyan-600"></i>
-                        Grafik Ranking Penyerapan Anggaran Wilayah Tertinggi (Stacked Bar)
+                        Grafik Ranking Penyerapan Anggaran Wilayah Tertinggi (Rp Juta)
                     </h3>
                     <div class="w-full flex-1 min-h-[460px] max-h-[520px] relative">
                         <canvas id="chart-ranking-wilayah"></canvas>
@@ -127,12 +122,11 @@
                 </div>
             </div>
 
-            <!-- Top 5 Project Urgent -->
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-rose-700 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
-                        Top 5 Project Urgent (Alokasi Besar - Penyerapan Kritis Terendah)
+                        Top 5 Project Urgent (Alokasi Besar - Penyerapan Terendah)
                     </h3>
                     <span class="bg-rose-50 text-rose-700 font-bold text-[11px] px-2 py-0.5 rounded border border-rose-100">Atensi Direktur Sektor</span>
                 </div>
@@ -143,8 +137,8 @@
                                 <th class="p-3 font-bold">ID & Nama Proyek Urgent</th>
                                 <th class="p-3 font-bold">Wilayah Operasional</th>
                                 <th class="p-3 font-bold">Mata Anggaran</th>
-                                <th class="p-3 font-bold text-right">Alokasi Akhir (Rp)</th>
-                                <th class="p-3 font-bold text-right">Realisasi YTD (Rp)</th>
+                                <th class="p-3 font-bold text-right">Alokasi Akhir (Rp Juta)</th>
+                                <th class="p-3 font-bold text-right">Realisasi YTD (Rp Juta)</th>
                                 <th class="p-3 font-bold text-center">Persentase Serapan</th>
                                 <th class="p-3 font-bold text-center">Sinyal EWS</th>
                             </tr>
@@ -155,7 +149,6 @@
             </div>
         </div>
 
-        <!-- TAB 2 -->
         <div id="tab-wilayah" class="tab-content content-segment hidden">
             <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col md:flex-row gap-4 items-end mb-4">
                 <div class="flex flex-col gap-1 w-full max-w-xs">
@@ -174,7 +167,6 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <!-- Ringkasan Kiri -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-fit">
                     <div class="p-4 bg-slate-50 border-b border-slate-200">
                         <h3 class="font-bold text-sm text-slate-700">Ringkasan Pos Mata Anggaran</h3>
@@ -185,8 +177,8 @@
                                 <tr class="bg-slate-100 text-bni-teal border-b border-slate-200">
                                     <th class="p-3 font-bold">Mata Anggaran</th>
                                     <th class="p-3 font-bold">Total Proyek</th>
-                                    <th class="p-3 font-bold">Alokasi (Rp)</th>
-                                    <th class="p-3 font-bold">Realisasi (Rp)</th>
+                                    <th class="p-3 font-bold">Alokasi (Rp Juta)</th>
+                                    <th class="p-3 font-bold">Realisasi (Rp Juta)</th>
                                     <th class="p-3 font-bold">Serapan</th>
                                 </tr>
                             </thead>
@@ -195,7 +187,6 @@
                     </div>
                 </div>
 
-                <!-- Breakdown Kanan -->
                 <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                     <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center z-10">
                         <h3 class="font-bold text-sm text-bni-teal uppercase tracking-wide flex items-center gap-2">
@@ -209,9 +200,9 @@
                                 <tr class="border-b border-slate-200">
                                     <th class="p-3 font-bold bg-slate-100">ID & Nama Project</th>
                                     <th class="p-3 font-bold bg-slate-100">Mata Anggaran</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Estimasi (Rp)</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Alokasi Akhir (Rp)</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Realisasi YTD (Rp)</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Estimasi Nilai Project (Rp Juta)</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Alokasi Akhir (Rp Juta)</th>
+                                    <th class="p-3 font-bold text-right bg-slate-100">Realisasi YTD (Rp Juta)</th>
                                     <th class="p-3 font-bold text-center bg-slate-100">Progress</th>
                                     <th class="p-3 font-bold bg-slate-100">Milestone Terkini</th>
                                     <th class="p-3 font-bold text-center bg-slate-100">Aksi</th>
@@ -224,7 +215,6 @@
             </div>
         </div>
 
-        <!-- TAB 3 -->
         <div id="tab-switching" class="tab-content content-segment hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -261,7 +251,7 @@
                             </div>
                         </div>
                         <div class="flex flex-col gap-1 pt-2">
-                            <label class="text-xs font-bold text-slate-500">Nominal Switching Dana (Rp)</label>
+                            <label class="text-xs font-bold text-slate-500">Nominal Switching Dana (Masukkan nilai Rupiah penuh)</label>
                             <input type="number" id="switch-nominal" class="border border-slate-200 rounded-lg p-2 text-xs bg-slate-50 outline-none" placeholder="Contoh: 150000000">
                         </div>
                         <button id="btn-execute-switching" class="w-full bg-bni-teal hover:bg-cyan-800 text-white font-bold py-2.5 rounded-lg text-xs mt-4 transition" onclick="executeSwitching()">
@@ -281,7 +271,7 @@
                                     <th class="p-3">Waktu</th>
                                     <th class="p-3">Sumber Asal</th>
                                     <th class="p-3">Tujuan Distribusi</th>
-                                    <th class="p-3">Nominal Transfer</th>
+                                    <th class="p-3">Nominal Transfer (Rp Juta)</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-log-switching" class="divide-y divide-slate-100">
@@ -295,10 +285,9 @@
             </div>
         </div>
 
-        <!-- TAB 4 -->
         <div id="tab-timeline" class="tab-content content-segment hidden">
             <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                <h3 class="font-bold text-sm text-bni-teal mb-3 uppercase">Timeline & Kurva Target Penyerapan (1 Tahun Anggaran)</h3>
+                <h3 class="font-bold text-sm text-bni-teal mb-3 uppercase">Timeline & Kurva Target Penyerapan (1 Tahun Anggaran - Dalam Rp Juta)</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead>
@@ -319,7 +308,6 @@
 
     </div>
 
-    <!-- MODAL POP-UP EDIT -->
     <div id="modal-edit-project" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-lg w-full overflow-hidden flex flex-col transform transition-transform scale-100">
             <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
@@ -343,7 +331,7 @@
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-bold text-slate-600 uppercase">1. Nilai Realisasi Anggaran YTD (Rp)</label>
+                    <label class="text-xs font-bold text-slate-600 uppercase">1. Nilai Realisasi Anggaran YTD (Masukkan Rupiah Penuh)</label>
                     <input type="number" id="modal-input-realisasi" class="w-full border border-slate-200 rounded-lg p-2 text-sm font-bold text-emerald-800 bg-slate-50 outline-none">
                 </div>
 
@@ -364,19 +352,15 @@
     <div id="toast">Notifikasi Real-time</div>
 
     <script>
-        // =========================================================================
-        // FITUR UTAMA: KONFIGURASI PROTEKSI PERIODE JENDELA PELAPORAN BULANAN (LOCK SYSTEM)
-        // =========================================================================
-        // Sesuai tahun berjalan (2026), fungsi ini membatasi hak akses input Kantor Wilayah.
-        // Contoh aturan: Proteksi TERBUKA hanya jika tanggal hari ini berada di antara Start s.d End Date.
         const CONFIG_PROTEKSI = {
-            aktifkanSistemKunci: true,  // Set false jika ingin mematikan sistem proteksi selamanya (Bypass)
-            tanggalMulaiTerbuka: 25,    // Terbuka mulai tanggal 25 setiap bulannya
-            tanggalSelesaiTerbuka: 5    // Ditutup kembali setelah tanggal 5 bulan berikutnya
+            aktifkanSistemKunci: true,  
+            tanggalMulaiTerbuka: 25,    
+            tanggalSelesaiTerbuka: 5    
         };
 
+        // PENYESUAIAN: Perbaikan ejaan kata "Palmebang" menjadi "Palembang" pada indeks ke-2
         const wilayahList = [
-            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palmebang)", 
+            "Wilayah 01 (Medan)", "Wilayah 02 (Padang)", "Wilayah 03 (Palembang)", 
             "Wilayah 04 (Bandung)", "Wilayah 05 (Semarang)", "Wilayah 06 (Surabaya)", 
             "Wilayah 07 (Makassar)", "Wilayah 08 (Denpasar)", "Wilayah 09 (Banjarmasin)", 
             "Wilayah 10 (Jakarta Kemayoran)", "Wilayah 11 (Manado)", "Wilayah 12 (Jakarta Kota)", 
@@ -406,19 +390,15 @@
 
         let globalRankingChartInstance = null;
         let selectedActiveProjectId = null;
-        let isPeriodePelaporanTerbuka = true; // State penentu hak akses update global
+        let isPeriodePelaporanTerbuka = true; 
 
-        // FUNGSI VALIDASI: Memeriksa apakah tanggal hari ini masuk dalam periode input/switching
         function periksaOtorisasiTanggalLaporan() {
             if (!CONFIG_PROTEKSI.aktifkanSistemKunci) {
                 isPeriodePelaporanTerbuka = true;
                 updateVisualBadgeProteksi("Terbuka (Bypass)", "bg-emerald-100 text-emerald-800 border-emerald-300");
                 return;
             }
-
-            const hariIni = new Date().getDate(); // Mengambil tanggal hari ini secara real-time
-            
-            // Logika Jendela Pelaporan: Terbuka jika tanggal >= 25 ATAU tanggal <= 5
+            const hariIni = new Date().getDate(); 
             if (hariIni >= CONFIG_PROTEKSI.tanggalMulaiTerbuka || hariIni <= CONFIG_PROTEKSI.tanggalSelesaiTerbuka) {
                 isPeriodePelaporanTerbuka = true;
                 updateVisualBadgeProteksi("● Periode Pelaporan Terbuka", "bg-emerald-100 text-emerald-800 border-emerald-300 border");
@@ -471,16 +451,19 @@
                     apiStatusEl.innerText = "API Live Terkoneksi";
                 }
             } catch (e) {
-                console.warn("Koneksi gagal, memuat data lokal:", e);
+                console.warn("Koneksi gagal, memuat data simulasi lokal:", e);
                 apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
                 apiStatusEl.innerText = "Mode Data Simulasi Aktif";
             }
-            periksaOtorisasiTanggalLaporan(); // Jalankan validasi proteksi sebelum merender komponen
+            periksaOtorisasiTanggalLaporan(); 
             processDataAndRender();
         }
 
+        // OPTIMASI FORMULA: Mengubah Satuan Angka dari Rupiah Penuh menjadi dalam Juta
         function formatIDR(val) {
-            return 'Rp ' + Math.round(val).toLocaleString('id-ID');
+            // Membagi nilai nominal dengan 1.000.000 untuk konversi ke satuan jutaan rupiah
+            const nilaiDalamJuta = Math.round(val / 1000000);
+            return 'Rp ' + nilaiDalamJuta.toLocaleString('id-ID');
         }
 
         function switchTab(event, tabId) {
@@ -579,7 +562,7 @@
                         </div>
                         <div class="mt-auto space-y-2">
                             <div class="flex justify-between items-center text-[11px] text-slate-400">
-                                <span>Konfirmasi Serapan</span>
+                                <span>Progres Serapan</span>
                                 <span class="font-bold text-slate-700">${pct.toFixed(0)}%</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -617,9 +600,9 @@
                 }
             }
 
-            document.getElementById('sum-sisa').innerText = formatIDR(grandAlokasi - grandRealisasi);
+            const sisaEl = document.getElementById('sum-sisa');
+            if(sisaEl) sisaEl.innerText = formatIDR(grandAlokasi - grandRealisasi);
             
-            // Atur status keterbukaan tombol fungsi form switching alokasi (Tab 3)
             const switchBtn = document.getElementById('btn-execute-switching');
             if(switchBtn) {
                 if(!isPeriodePelaporanTerbuka) {
@@ -647,10 +630,12 @@
             }
 
             const sortedLabels = chartRawData.map(item => item.wilayahLabel);
-            const dataTanah = chartRawData.map(item => item.breakdown["Tanah"]);
-            const dataBangunan = chartRawData.map(item => item.breakdown["Bangunan"]);
-            const dataPerbotan = chartRawData.map(item => item.breakdown["Perbotan Non Otomasi"]);
-            const dataKendaraan = chartRawData.map(item => item.breakdown["Kendaraan"]);
+            
+            // Konversi nilai mentah grafik ke dalam satuan juta agar sinkron dengan tabel
+            const dataTanah = chartRawData.map(item => Math.round(item.breakdown["Tanah"] / 1000000));
+            const dataBangunan = chartRawData.map(item => Math.round(item.breakdown["Bangunan"] / 1000000));
+            const dataPerbotan = chartRawData.map(item => Math.round(item.breakdown["Perbotan Non Otomasi"] / 1000000));
+            const dataKendaraan = chartRawData.map(item => Math.round(item.breakdown["Kendaraan"] / 1000000));
 
             globalRankingChartInstance = new Chart(ctx, {
                 type: 'bar',
@@ -669,10 +654,15 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 10 } } },
-                        tooltip: { callbacks: { label: function(context) { return ` ${context.dataset.label}: ${formatIDR(context.raw)}`; } } }
+                        tooltip: { callbacks: { label: function(context) { return ` ${context.dataset.label}: Rp ${context.raw.toLocaleString('id-ID')}`; } } }
                     },
                     scales: {
-                        x: { stacked: true, grid: { color: '#F1F5F9' }, ticks: { font: { size: 9 } } },
+                        x: { 
+                            stacked: true, 
+                            grid: { color: '#F1F5F9' }, 
+                            ticks: { font: { size: 9 } },
+                            title: { display: true, text: 'Nilai Anggaran (Dalam Rp Juta)', font: { size: 10 } }
+                        },
                         y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
                     }
                 }
@@ -804,17 +794,14 @@
                     const pPct = p.alokasi > 0 ? (p.realisasi / p.alokasi) * 100 : 0;
                     let barColor = pPct >= 75 ? "bg-emerald-500" : pPct >= 40 ? "bg-amber-500" : "bg-rose-500";
 
-                    // PROTEKSI VISUAL: Tentukan style tombol berdasarkan status periode terbuka/terkunci
                     let actionButtonHtml = "";
                     if (!isPeriodePelaporanTerbuka) {
-                        // Jika terkunci, tampilkan tombol abu-abu (Read-Only) yang tidak bisa diklik
                         actionButtonHtml = `
                             <button disabled class="bg-slate-200 text-slate-400 font-bold py-1 px-2.5 rounded text-[10px] flex items-center gap-1 mx-auto cursor-not-allowed border border-slate-300" title="Periode penguncian data wilayah aktif">
                                 <i data-lucide="lock" class="w-3 h-3"></i> Locked
                             </button>
                         `;
                     } else {
-                        // Jika dalam periode pelaporan, tombol aktif berwarna teal seperti biasa
                         actionButtonHtml = `
                             <button onclick="openProjectEditModal('${p.id}')" class="bg-bni-teal hover:bg-cyan-800 text-white font-bold py-1 px-2.5 rounded text-[11px] flex items-center gap-1 mx-auto shadow-sm transition">
                                 <i data-lucide="edit-3" class="w-3 h-3"></i> Update
@@ -856,7 +843,6 @@
         }
 
         function openProjectEditModal(projectId) {
-            // PENGAMAN SISTEM CADANGAN: Jika lewat celah konsol mencoba panggil paksa fungsi modal saat terkunci
             if (!isPeriodePelaporanTerbuka) {
                 alert("Akses Ditolak: Jendela pemutakhiran data realisasi bulanan Kantor Wilayah saat ini sedang ditutup.");
                 return;
@@ -873,6 +859,8 @@
             document.getElementById('modal-info-mata').innerText = p.mataAnggaran;
             document.getElementById('modal-info-estimasi').innerText = formatIDR(p.estimasiAwal || 0);
             document.getElementById('modal-info-alokasi').innerText = formatIDR(p.alokasi);
+            
+            // Catatan: Form input modal tetap menerima input rupiah penuh agar operator wilayah tidak bingung
             document.getElementById('modal-input-realisasi').value = p.realisasi;
 
             const milestoneSelect = document.getElementById('modal-select-milestone');
@@ -1056,17 +1044,23 @@
                 let a = 0, r = 0;
                 mataAnggaranList.forEach(m => { a += appData.alokasi[`${w}__${m}`]||0; r += appData.realisasi[`${w}__${m}`]||0; });
                 const s = a - r;
+                
+                // Konversi data ekspor excel ke satuan juta agar seragam dengan UI web app
+                const aJuta = Math.round(a / 1000000);
+                const rJuta = Math.round(r / 1000000);
+                const sJuta = Math.round(s / 1000000);
                 const p = a > 0 ? ((r/a)*100).toFixed(2) : "0.00";
-                context += `<tr><td>${index+1}</td><td>${w}</td><td>${a}</td><td>${r}</td><td>${s}</td><td>${p}%</td></tr>`;
+                
+                context += `<tr><td>${index+1}</td><td>${w}</td><td>${aJuta}</td><td>${rJuta}</td><td>${sJuta}</td><td>${p}%</td></tr>`;
             });
 
             const template = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
                 <body>
-                    <h3>LAPORAN MONITORING CAPEX EKSEKUTIF - DIREKTUR SEKTOR</h3>
+                    <h3>LAPORAN MONITORING CAPEX EKSEKUTIF - DIREKTUR SEKTOR (DALAM RP JUTA)</h3>
                     <table border="1">
                         <tr style="background-color:#005E6A; color:white;">
-                            <th>No</th><th>Kantor Wilayah</th><th>Total Alokasi (IDR)</th><th>Total Realisasi (IDR)</th><th>Sisa Plafon (IDR)</th><th>% Penyerapan</th>
+                            <th>No</th><th>Kantor Wilayah</th><th>Total Alokasi (Rp Juta)</th><th>Total Realisasi (Rp Juta)</th><th>Sisa Plafon (Rp Juta)</th><th>% Penyerapan</th>
                         </tr>
                         ${context}
                     </table>
@@ -1076,7 +1070,7 @@
             const blob = new Blob([template], { type: 'application/vnd.ms-excel' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = 'Laporan_Capex_Direktur_Sektor.xls';
+            a.href = url; a.download = 'Laporan_Capex_Direktur_Sektor_Jutaan.xls';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             showToast("Berkas excel berhasil diekspor.");
         }

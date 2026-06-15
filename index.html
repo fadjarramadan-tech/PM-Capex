@@ -35,6 +35,8 @@
             z-index: 1000;
             display: none;
         }
+        th.sortable { cursor: pointer; position: relative; user-select: none; }
+        th.sortable:hover { background-color: #E2E8F0; }
     </style>
 </head>
 <body class="text-slate-700 antialiased">
@@ -55,15 +57,13 @@
 
     <div class="container mx-auto p-5 max-w-[1600px]">
         
-        <!-- Tabs -->
         <div class="flex bg-white p-2 rounded-t-xl border-b border-slate-200 gap-2 overflow-x-auto">
-            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard</button>
-            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
-            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-switching')">Mekanisme Switching Anggaran</button>
-            <button class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
+            <button id="btn-tab-dashboard" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg bg-slate-100 text-bni-teal border-b-2 border-bni-teal" onclick="switchTab(event, 'tab-dashboard')">Dashboard</button>
+            <button id="btn-tab-wilayah" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-wilayah')">Realisasi per Wilayah & Detail Project</button>
+            <button id="btn-tab-switching" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-switching')">Mekanisme Switching Anggaran</button>
+            <button id="btn-tab-timeline" class="tab-btn px-4 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-50" onclick="switchTab(event, 'tab-timeline')">Timeline Rencana Penyerapan</button>
         </div>
 
-        <!-- Filter Global -->
         <div class="bg-white p-4 rounded-b-xl shadow-sm border-x border-b border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
             <div class="flex flex-col gap-1">
                 <label class="text-xs font-bold text-slate-400 uppercase">Filter Mata Anggaran</label>
@@ -80,7 +80,6 @@
             </button>
         </div>
 
-        <!-- Scorecards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-l-cyan-600 border border-slate-200">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Alokasi CAPEX (Rp Juta)</div>
@@ -104,19 +103,16 @@
             </div>
         </div>
 
-        <!-- TAB 1: DASHBOARD -->
         <div id="tab-dashboard" class="tab-content content-segment space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Sisi Kiri: Progres Per Wilayah -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                     <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="trending-up" class="w-4 h-4 text-amber-500"></i>
-                        Progres Per Wilayah
+                        Progres Per Wilayah <span class="text-[11px] text-slate-400 lowercase normal-case font-normal">(Klik wilayah untuk detail)</span>
                     </h3>
                     <div id="regional-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1"></div>
                 </div>
 
-                <!-- Sisi Kanan: Grafik Batang Horizontal Tumpuk -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
                     <h3 class="text-sm font-bold text-bni-teal mb-3.5 flex items-center gap-1.5 uppercase tracking-wide">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyan-600"></i>
@@ -128,7 +124,6 @@
                 </div>
             </div>
 
-            <!-- Top 5 Project Urgent -->
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-rose-700 flex items-center gap-1.5 uppercase tracking-wide">
@@ -156,7 +151,6 @@
             </div>
         </div>
 
-        <!-- TAB 2: DETAIL INDIVIDU PROJECT -->
         <div id="tab-wilayah" class="tab-content content-segment hidden">
             <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col md:flex-row gap-4 items-end mb-4">
                 <div class="flex flex-col gap-1 w-full max-w-xs">
@@ -175,7 +169,6 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <!-- Ringkasan Kiri -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-fit">
                     <div class="p-4 bg-slate-50 border-b border-slate-200">
                         <h3 class="font-bold text-sm text-slate-700">Ringkasan Pos Mata Anggaran</h3>
@@ -196,7 +189,6 @@
                     </div>
                 </div>
 
-                <!-- Breakdown Kanan -->
                 <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                     <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center z-10">
                         <h3 class="font-bold text-sm text-bni-teal uppercase tracking-wide flex items-center gap-2">
@@ -208,13 +200,13 @@
                         <table class="w-full text-left text-xs table-auto">
                             <thead class="sticky top-0 bg-slate-100 text-slate-600 shadow-sm z-20">
                                 <tr class="border-b border-slate-200">
-                                    <th class="p-3 font-bold bg-slate-100">ID & Nama Project</th>
-                                    <th class="p-3 font-bold bg-slate-100">Mata Anggaran</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Estimasi Nilai Project (Rp Juta)</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Alokasi Akhir (Rp Juta)</th>
-                                    <th class="p-3 font-bold text-right bg-slate-100">Realisasi YTD (Rp Juta)</th>
-                                    <th class="p-3 font-bold text-center bg-slate-100">Progress</th>
-                                    <th class="p-3 font-bold bg-slate-100">Milestone Terkini</th>
+                                    <th class="p-3 font-bold bg-slate-100 sortable" onclick="handleSort('id')">ID & Nama Project <span id="sort-icon-id"></span></th>
+                                    <th class="p-3 font-bold bg-slate-100 sortable" onclick="handleSort('mataAnggaran')">Mata Anggaran <span id="sort-icon-mataAnggaran"></span></th>
+                                    <th class="p-3 text-right bg-slate-100 sortable" onclick="handleSort('estimasiAwal')">Estimasi Nilai (Rp Juta) <span id="sort-icon-estimasiAwal"></span></th>
+                                    <th class="p-3 text-right bg-slate-100 sortable" onclick="handleSort('alokasi')">Alokasi Akhir (Rp Juta) <span id="sort-icon-alokasi"></span></th>
+                                    <th class="p-3 text-right bg-slate-100 sortable" onclick="handleSort('realisasi')">Realisasi YTD (Rp Juta) <span id="sort-icon-realisasi"></span></th>
+                                    <th class="p-3 text-center bg-slate-100 sortable" onclick="handleSort('progress')">Progress <span id="sort-icon-progress"></span></th>
+                                    <th class="p-3 font-bold bg-slate-100 sortable" onclick="handleSort('milestone')">Milestone Terkini <span id="sort-icon-milestone"></span></th>
                                     <th class="p-3 font-bold text-center bg-slate-100">Aksi</th>
                                 </tr>
                             </thead>
@@ -225,7 +217,6 @@
             </div>
         </div>
 
-        <!-- TAB 3: SWITCHING ANGGARAN -->
         <div id="tab-switching" class="tab-content content-segment hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -296,23 +287,72 @@
             </div>
         </div>
 
-        <!-- TAB 4: TIMELINE -->
-        <div id="tab-timeline" class="tab-content content-segment hidden">
+        <div id="tab-timeline" class="tab-content content-segment hidden space-y-6">
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Kantor Wilayah</label>
+                        <select id="filter-timeline-wilayah" class="border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 outline-none min-w-[200px]" onchange="renderTimelineView()">
+                        </select>
+                    </div>
+                </div>
+                <div class="relative max-w-xs w-full">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <input type="text" id="search-timeline-project" onkeyup="renderTimelineView()" placeholder="Cari project di timeline..." class="w-full border border-slate-200 rounded-lg p-2 pl-9 text-xs bg-white outline-none focus:border-bni-teal">
+                </div>
+            </div>
+
             <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                <h3 class="font-bold text-sm text-bni-teal mb-3 uppercase">Timeline & Kurva Target Penyerapan (1 Tahun Anggaran - Dalam Rp Juta)</h3>
+                <h3 class="font-bold text-xs text-bni-teal uppercase mb-3 flex items-center gap-1.5 tracking-wide">
+                    <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i> Rekapitulasi Rencana Komitmen Per Mata Anggaran (Rp Juta)
+                </h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500">
-                                <th class="p-3 font-bold">Wilayah & Item CAPEX</th>
-                                <th class="p-3 font-bold">Q1 (20%)</th>
-                                <th class="p-3 font-bold">Q2 (30%)</th>
-                                <th class="p-3 font-bold">Q3 (30%)</th>
-                                <th class="p-3 font-bold">Q4 (20%)</th>
-                                <th class="p-3 font-bold" style="width:250px;">Visualisasi Garis Rencana Kerja</th>
+                    <table class="w-full text-left text-xs table-fixed min-w-[800px]">
+                        <thead id="thead-timeline-summary">
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]">
+                                <th class="p-2.5 w-[220px]">Mata Anggaran (Klik untuk Detail Bulan)</th>
+                                <th class="p-2.5 text-right bg-slate-100/50 w-[130px]">Plafon Alokasi</th>
+                                <th class="p-2.5 text-right bg-cyan-50/50">Total Q1 (%)</th>
+                                <th class="p-2.5 text-right bg-emerald-50/50">Total Q2 (%)</th>
+                                <th class="p-2.5 text-right bg-amber-50/50">Total Q3 (%)</th>
+                                <th class="p-2.5 text-right bg-purple-50/50">Total Q4 (%)</th>
+                                <th class="p-2.5 text-right bg-slate-100 text-slate-800">Grand Total Rencana</th>
+                                <th class="p-2.5 text-center bg-teal-50 text-teal-900 w-[110px]">% Rencana vs Alokasi</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-timeline" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="tbody-timeline-summary" class="divide-y divide-slate-100 font-medium text-slate-700">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col">
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+                        <i data-lucide="list" class="w-4 h-4 text-cyan-600"></i> Daftar Detail Komitmen Rencana Kerja Proyek
+                    </h3>
+                    <div class="flex gap-3 text-[10px] font-bold">
+                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> Sudah Terisi</span>
+                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-rose-500 rounded-full"></span> Belum Melengkapi</span>
+                    </div>
+                </div>
+                <div class="overflow-y-auto max-h-[400px] w-full relative">
+                    <table class="w-full text-left text-xs table-fixed min-w-[1100px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-600 shadow-sm z-10 font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="p-3 w-[350px]">Nama, ID Project & Wilayah</th>
+                                <th class="p-3 w-[150px]">Mata Anggaran</th>
+                                <th class="p-3 text-right w-[150px]">Alokasi Penuh</th>
+                                <th class="p-3 text-right w-[150px]">Total Komitmen (12 Bln)</th>
+                                <th class="p-3 text-center w-[150px]">Status Isian</th>
+                                <th class="p-3 text-center w-[150px]">Aksi Rencana</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-timeline" class="divide-y divide-slate-100 bg-white">
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -320,7 +360,6 @@
 
     </div>
 
-    <!-- MODAL POP-UP EDIT -->
     <div id="modal-edit-project" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-lg w-full overflow-hidden flex flex-col transform transition-transform scale-100">
             <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
@@ -362,6 +401,72 @@
         </div>
     </div>
 
+    <div id="modal-timeline-plan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-4xl w-full overflow-hidden flex flex-col transform transition-transform scale-100">
+            <div class="bg-bni-teal px-6 py-4 text-white flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                    <h3 class="font-bold text-sm tracking-wide uppercase" id="modal-timeline-title">Form Isian Target Distribusi Anggaran Bulanan</h3>
+                </div>
+                <button onclick="closeTimelineModal()" class="text-teal-100 hover:text-white transition p-1 rounded-full hover:bg-teal-700">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4 text-xs overflow-y-auto max-h-[75vh]">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-3 font-medium">
+                    <div><span class="text-slate-400 block text-[10px]">ID PROYEK</span><span class="font-mono font-bold text-cyan-800 text-xs" id="mt-info-id">-</span></div>
+                    <div><span class="text-slate-400 block text-[10px]">NAMA PROYEK</span><span class="font-bold text-slate-800 text-xs truncate block" id="mt-info-nama">-</span></div>
+                    <div><span class="text-slate-400 block text-[10px]">MATA ANGGARAN</span><span class="text-slate-600" id="mt-info-mata">-</span></div>
+                    <div><span class="text-slate-400 block text-[10px]">PLAFON ALOKASI</span><span class="font-bold text-bni-teal" id="mt-info-alokasi">Rp 0</span></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-blue-50/40 p-3 rounded-xl border border-blue-100 space-y-2.5">
+                        <h4 class="font-bold text-blue-900 border-b border-blue-100 pb-1 text-center">KUARTAL 1 (Q1)</h4>
+                        <div><label class="text-[10px] font-bold text-slate-500">Januari (Rp)</label><input type="number" id="mt-input-0" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">Februari (Rp)</label><input type="number" id="mt-input-1" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">Maret (Rp)</label><input type="number" id="mt-input-2" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div class="pt-2 text-right text-blue-900 font-bold border-t border-dashed border-blue-200 text-[10px]">Total Q1: <span id="mt-label-q1">Rp 0</span></div>
+                    </div>
+                    <div class="bg-emerald-50/40 p-3 rounded-xl border border-emerald-100 space-y-2.5">
+                        <h4 class="font-bold text-emerald-900 border-b border-emerald-100 pb-1 text-center">KUARTAL 2 (Q2)</h4>
+                        <div><label class="text-[10px] font-bold text-slate-500">April (Rp)</label><input type="number" id="mt-input-3" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">Mei (Rp)</label><input type="number" id="mt-input-4" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">Juni (Rp)</label><input type="number" id="mt-input-5" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div class="pt-2 text-right text-emerald-900 font-bold border-t border-dashed border-emerald-200 text-[10px]">Total Q2: <span id="mt-label-q2">Rp 0</span></div>
+                    </div>
+                    <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2.5">
+                        <h4 class="font-bold text-amber-900 border-b border-amber-100 pb-1 text-center">KUARTAL 3 (Q3)</h4>
+                        <div><label class="text-[10px] font-bold text-slate-500">Juli (Rp)</label><input type="number" id="mt-input-6" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">Agustus (Rp)</label><input type="number" id="mt-input-7" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">September (Rp)</label><input type="number" id="mt-input-8" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div class="pt-2 text-right text-amber-900 font-bold border-t border-dashed border-amber-200 text-[10px]">Total Q3: <span id="mt-label-q3">Rp 0</span></div>
+                    </div>
+                    <div class="bg-purple-50/40 p-3 rounded-xl border border-purple-100 space-y-2.5">
+                        <h4 class="font-bold text-purple-900 border-b border-purple-100 pb-1 text-center">KUARTAL 4 (Q4)</h4>
+                        <div><label class="text-[10px] font-bold text-slate-500">Oktober (Rp)</label><input type="number" id="mt-input-9" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">November (Rp)</label><input type="number" id="mt-input-10" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500">Desember (Rp)</label><input type="number" id="mt-input-11" class="w-full p-2 border border-slate-200 rounded mt-1 text-xs outline-none font-semibold text-slate-700" oninput="recalculateModalQuarters()"></div>
+                        <div class="pt-2 text-right text-purple-900 font-bold border-t border-dashed border-purple-200 text-[10px]">Total Q4: <span id="mt-label-q4">Rp 0</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-100 p-4 rounded-xl flex justify-between items-center text-sm font-black text-slate-700">
+                    <span>Total Akumulasi Rencana Setahun:</span>
+                    <span id="mt-label-grand-total" class="text-bni-teal text-base">Rp 0</span>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+                <button onclick="closeTimelineModal()" class="px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-lg text-xs bg-white hover:bg-slate-50 transition">Batal</button>
+                <button id="modal-timeline-btn-submit" onclick="submitTimelineModalUpdate()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-sm transition">
+                    Simpan Komitmen Rencana
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast">Notifikasi Real-time</div>
 
     <script>
@@ -397,11 +502,16 @@
             realisasi: {},
             asetCount: {}, 
             rawProjects: [], 
-            switchingLogs: []
+            switchingLogs: [],
+            monthlyPlans: {} 
         };
+
+        let currentSortField = '';
+        let currentSortOrder = 'asc'; 
 
         let globalRankingChartInstance = null;
         let selectedActiveProjectId = null;
+        let selectedTimelineProjectId = null; 
         let isPeriodePelaporanTerbuka = true; 
 
         function periksaOtorisasiTanggalLaporan() {
@@ -433,6 +543,7 @@
             appData.realisasi = {};
             appData.asetCount = {};
             appData.rawProjects = [];
+            appData.monthlyPlans = {};
 
             wilayahList.forEach(w => {
                 appData.asetCount[w] = 0; 
@@ -444,6 +555,14 @@
             });
         }
 
+        function initSimulatedMonthlyPlans() {
+            appData.rawProjects.forEach((p) => {
+                if (!appData.monthlyPlans[p.id]) {
+                    appData.monthlyPlans[p.id] = Array(12).fill(0);
+                }
+            });
+        }
+
         async function fetchExternalData() {
             const apiStatusEl = document.getElementById('api-status');
             try {
@@ -452,23 +571,33 @@
                 
                 const json = await response.json();
                 
-                if (json && json.alokasi && json.realisasi) {
-                    appData.alokasi = json.alokasi;
-                    appData.realisasi = json.realisasi;
+                if (json) {
+                    appData.alokasi = json.alokasi || {};
+                    appData.realisasi = json.realisasi || {};
                     appData.asetCount = json.asetCount || {};
                     appData.rawProjects = json.projects || [];
+                    
+                    if (json.monthlyPlans) {
+                        appData.monthlyPlans = json.monthlyPlans;
+                    } else {
+                        appData.monthlyPlans = {};
+                    }
                     
                     showToast("Berhasil sinkronisasi dengan database Google Sheets Live.");
                     apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
                     apiStatusEl.innerText = "API Live Terkoneksi";
                 }
             } catch (e) {
-                console.warn("Koneksi gagal, memuat data simulasi lokal:", e);
+                console.warn("Koneksi gagal atau database kosong, memuat fallback struktural:", e);
                 apiStatusEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300";
-                apiStatusEl.innerText = "Mode Data Simulasi Aktif";
+                apiStatusEl.innerText = "Mode Data Lokal Aktif";
             }
+
             periksaOtorisasiTanggalLaporan(); 
+            initSimulatedMonthlyPlans(); 
+            
             processDataAndRender();
+            renderTimelineView(); 
         }
 
         function formatIDR(val) {
@@ -476,7 +605,6 @@
             return 'Rp ' + nilaiDalamJuta.toLocaleString('id-ID');
         }
 
-        // PERBAIKAN UTAMA: Manajemen tab dikonfigurasi mandiri tanpa tabrakan siklus render
         function switchTab(event, tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
@@ -485,17 +613,28 @@
             });
             
             document.getElementById(tabId).classList.remove('hidden');
-            event.currentTarget.classList.add('bg-slate-100', 'text-bni-teal', 'border-b-2', 'border-bni-teal');
-            event.currentTarget.classList.remove('text-slate-500');
+            
+            let targetBtn = event ? event.currentTarget : document.getElementById('btn-' + tabId);
+            if(targetBtn) {
+                targetBtn.classList.add('bg-slate-100', 'text-bni-teal', 'border-b-2', 'border-bni-teal');
+                targetBtn.classList.remove('text-slate-500');
+            }
 
-            // SOLUSI: Jalankan fungsi render spesifik masing-masing objek tujuan
             if (tabId === 'tab-dashboard') {
-                processDataAndRender(); // Re-render Dashboard, grafik, dan tabel proyek urgent secara utuh
+                processDataAndRender(); 
             } else if (tabId === 'tab-wilayah') {
                 renderWilayahDetails();
             } else if (tabId === 'tab-timeline') {
-                renderTimelineView();
+                renderTimelineView(); 
             }
+        }
+
+        function drilldownToWilayah(namaWilayah) {
+            const selectFilter = document.getElementById('select-filter-wilayah');
+            if (selectFilter) {
+                selectFilter.value = namaWilayah;
+            }
+            switchTab(null, 'tab-wilayah');
         }
 
         function onGlobalFilterChange() {
@@ -503,6 +642,8 @@
             const tabWilayahIsActive = !document.getElementById('tab-wilayah').classList.contains('hidden');
             if (tabWilayahIsActive) {
                 renderWilayahDetails();
+            } else if (!document.getElementById('tab-timeline').classList.contains('hidden')) {
+                renderTimelineView();
             }
         }
 
@@ -566,7 +707,7 @@
                 }
 
                 gridContainer.innerHTML += `
-                    <div class="bg-white rounded-xl p-4 shadow-sm border ${borderHighlight} transition hover:shadow-md flex flex-col justify-between">
+                    <div class="bg-white rounded-xl p-4 shadow-sm border ${borderHighlight} transition hover:shadow-md hover:border-bni-teal cursor-pointer flex flex-col justify-between" onclick="drilldownToWilayah('${w}')">
                         <div>
                             <div class="flex justify-between items-start mb-1.5">
                                 <h4 class="text-xs font-bold text-slate-800 truncate pr-2" title="${w}">${w}</h4>
@@ -609,7 +750,7 @@
                     ewsGlobalCard.classList.add('border-l-amber-500'); 
                     if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-amber-500 font-bold">● YELLOW</span> (Warning): Penyerapan Pantau/Awas`;
                 } else { 
-                    ewsGlobalCard.classList.add('border-l-rose-500'); 
+                    ewsGlobalCard.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border border-slate-200 border-l-rose-500";
                     if(ewsGlobalDesc) ewsGlobalDesc.innerHTML = `<span class="text-rose-600 font-bold">● RED</span> (Critical): Penyerapan Rendah`;
                 }
             }
@@ -632,7 +773,6 @@
 
             renderStackedHorizontalChart(chartRawData);
             renderTopUrgentProjects();
-            renderTimelineView();
         }
 
         function renderStackedHorizontalChart(chartRawData) {
@@ -736,6 +876,33 @@
             tbodyUrgent.innerHTML = urgentHtml;
         }
 
+        function handleSort(field) {
+            if (currentSortField === field) {
+                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortOrder = 'asc';
+            }
+            updateSortIcons();
+            renderWilayahDetails();
+        }
+
+        function updateSortIcons() {
+            const fields = ['id', 'mataAnggaran', 'estimasiAwal', 'alokasi', 'realisasi', 'progress', 'milestone'];
+            fields.forEach(f => {
+                const el = document.getElementById(`sort-icon-${f}`);
+                if (el) {
+                    if (f === currentSortField) {
+                        el.innerHTML = currentSortOrder === 'asc' ? '▲' : '▼';
+                        el.className = "text-[9px] ml-1 text-bni-teal font-bold";
+                    } else {
+                        el.innerHTML = "↕";
+                        el.className = "text-[9px] ml-1 text-slate-300";
+                    }
+                }
+            });
+        }
+
         function renderWilayahDetails() {
             const selectEl = document.getElementById('select-filter-wilayah');
             const currentW = selectEl ? selectEl.value : "ALL";
@@ -744,12 +911,32 @@
             const searchInput = document.getElementById('search-project-name');
             const searchKeyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
             
-            const filteredProjects = appData.rawProjects.filter(p => {
+            let filteredProjects = appData.rawProjects.filter(p => {
                 const matchWilayah = (currentW === "ALL" || p.wilayah === currentW);
-                const matchMata = (filterMata === 'ALL' || p.mataAnggaran === filterMata);
+                const matchMata = (filterMata === 'ALL' || filterMata === p.mataAnggaran);
                 const matchSearch = (p.nama.toLowerCase().includes(searchKeyword) || p.id.toLowerCase().includes(searchKeyword));
                 return matchWilayah && matchMata && matchSearch;
             });
+
+            if (currentSortField) {
+                filteredProjects.sort((a, b) => {
+                    let valA, valB;
+                    
+                    if (currentSortField === 'progress') {
+                        valA = a.alokasi > 0 ? (a.realisasi / a.alokasi) : 0;
+                        valB = b.alokasi > 0 ? (b.realisasi / b.alokasi) : 0;
+                    } else {
+                        valA = a[currentSortField];
+                        valB = b[currentSortField];
+                    }
+
+                    if (typeof valA === 'string') {
+                        return currentSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                    } else {
+                        return currentSortOrder === 'asc' ? valA - valB : valB - valA;
+                    }
+                });
+            }
 
             const tbodyMata = document.getElementById('tbody-detail-wilayah');
             if(tbodyMata) {
@@ -1014,30 +1201,443 @@
         }
 
         function renderTimelineView() {
-            const tbody = document.getElementById('tbody-timeline');
-            if(tbody) {
-                tbody.innerHTML = '';
-                wilayahList.forEach(w => {
-                    const total = appData.alokasi[`${w}__Bangunan`] || 0;
-                    const realisasi = appData.realisasi[`${w}__Bangunan`] || 0;
-                    const pct = total > 0 ? (realisasi / total) * 100 : 0;
+            const tbodyDetail = document.getElementById('tbody-timeline');
+            const filterWilayahEl = document.getElementById('filter-timeline-wilayah');
+            const searchInput = document.getElementById('search-timeline-project');
+            const filterMataGlobal = document.getElementById('global-mata-anggaran') ? document.getElementById('global-mata-anggaran').value : 'ALL';
+            
+            if(!tbodyDetail || !filterWilayahEl) return;
 
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="p-3"><strong>${w}</strong><br><span class="text-[10px] text-slate-400">Komponen Alokasi Bangunan</span></td>
-                            <td class="p-3">${formatIDR(total*0.2)}<br><span class="text-[10px] text-slate-400">Plan: 20%</span></td>
-                            <td class="p-3">${formatIDR(total*0.3)}<br><span class="text-[10px] text-slate-400">Plan: 30%</span></td>
-                            <td class="p-3">${formatIDR(total*0.3)}<br><span class="text-[10px] text-slate-400">Plan: 30%</span></td>
-                            <td class="p-3">${formatIDR(total*0.2)}<br><span class="text-[10px] text-slate-400">Plan: 20%</span></td>
-                            <td class="p-3">
-                                <div class="timeline-track">
-                                    <div class="timeline-bar rounded animate-pulse" style="width: ${Math.min(pct, 100)}%; background-color: var(--primary-color); height:100%"></div>
-                                </div>
-                                <span class="text-[10px] font-semibold text-slate-500">YTD Realisasi: ${pct.toFixed(0)}%</span>
+            const targetWilayah = filterWilayahEl.value;
+            const searchKeyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            
+            tbodyDetail.innerHTML = '';
+
+            mataAnggaranList.forEach(m => {
+                if (filterMataGlobal !== 'ALL' && filterMataGlobal !== m) return;
+
+                const projectsInMataAnggaran = appData.rawProjects.filter(p => {
+                    const matchMata = (p.mataAnggaran === m);
+                    const matchWil = (targetWilayah === "ALL" || p.wilayah === targetWilayah);
+                    const matchSearch = (p.nama.toLowerCase().includes(searchKeyword) || p.id.toLowerCase().includes(searchKeyword));
+                    return matchMata && matchWil && matchSearch;
+                });
+
+                let subTotalQ = [0, 0, 0, 0]; 
+                let subTotalAlokasiPenuh = 0;
+                let subTotalKomitmenSatuTahun = 0;
+
+                projectsInMataAnggaran.forEach(p => {
+                    const plans = appData.monthlyPlans[p.id] || Array(12).fill(0);
+                    subTotalQ[0] += (Number(plans[0]) || 0) + (Number(plans[1]) || 0) + (Number(plans[2]) || 0);
+                    subTotalQ[1] += (Number(plans[3]) || 0) + (Number(plans[4]) || 0) + (Number(plans[5]) || 0);
+                    subTotalQ[2] += (Number(plans[6]) || 0) + (Number(plans[7]) || 0) + (Number(plans[8]) || 0);
+                    subTotalQ[3] += (Number(plans[9]) || 0) + (Number(plans[10]) || 0) + (Number(plans[11]) || 0);
+                    subTotalAlokasiPenuh += Number(p.alokasi) || 0;
+                });
+                subTotalKomitmenSatuTahun = subTotalQ[0] + subTotalQ[1] + subTotalQ[2] + subTotalQ[3];
+
+                if (projectsInMataAnggaran.length > 0) {
+                    const rowAgregasiHtml = `
+                        <tr class="bg-slate-100 font-bold border-y border-slate-300">
+                            <td class="p-3 text-bni-teal uppercase tracking-wider text-[11px]" colspan="2">
+                                <span class="flex items-center gap-1.5">
+                                    <i data-lucide="folder-tree" class="w-4 h-4 text-bni-teal"></i> 
+                                    [AGREGASI SUB-TOTAL] MATA ANGGARAN: ${m}
+                                </span>
+                            </td>
+                            <td class="p-3 text-right text-slate-800 font-bold">${formatIDR(subTotalAlokasiPenuh)}</td>
+                            <td class="p-3 text-right text-bni-teal font-black">${formatIDR(subTotalKomitmenSatuTahun)}</td>
+                            <td class="p-3 text-center text-[10px] text-slate-500 italic" colspan="2">
+                                Gabungan ${projectsInMataAnggaran.length} Proyek
                             </td>
                         </tr>
+                        <tr class="bg-slate-50/80 text-[10px] text-slate-600 border-b border-slate-200">
+                            <td colspan="2" class="p-2 pl-8 font-semibold">Distribusi Kuartal Mata Anggaran:</td>
+                            <td class="p-2 text-right">Q1 (Jan-Mar): <strong>${formatIDR(subTotalQ[0])}</strong></td>
+                            <td class="p-2 text-right">Q2 (Apr-Jun): <strong>${formatIDR(subTotalQ[1])}</strong></td>
+                            <td class="p-2 text-right">Q3 (Jul-Sep): <strong>${formatIDR(subTotalQ[2])}</strong></td>
+                            <td class="p-2 text-right">Q4 (Okt-Des): <strong>${formatIDR(subTotalQ[3])}</strong></td>
+                        </tr>
                     `;
+                    tbodyDetail.insertAdjacentHTML('beforeend', rowAgregasiHtml);
+
+                    projectsInMataAnggaran.forEach(p => {
+                        const plans = appData.monthlyPlans[p.id] || Array(12).fill(0);
+                        const sumPlans = plans.reduce((a, b) => Number(a) + Number(b), 0);
+                        const isConfigured = plans.some(val => Number(val) > 0);
+                        
+                        let statusBadge = isConfigured ? 
+                            `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center justify-center gap-1 mx-auto max-w-[110px]"><span class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span> Terisi</span>` :
+                            `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300 flex items-center justify-center gap-1 mx-auto max-w-[110px] animate-pulse"><span class="w-1.5 h-1.5 bg-rose-600 rounded-full"></span> Belum Diisi</span>`;
+
+                        const rowProjectHtml = `
+                            <tr class="hover:bg-cyan-50/40 transition border-b border-slate-100 bg-white">
+                                <td class="p-3 pl-8">
+                                    <div class="font-bold text-slate-800 truncate max-w-[300px]" title="${p.nama}">${p.nama}</div>
+                                    <div class="text-[9px] font-mono text-cyan-700 font-bold mt-0.5">${p.id} <span class="text-slate-400 font-normal">| ${p.wilayah}</span></div>
+                                </td>
+                                <td class="p-3 text-slate-500 font-medium align-middle">${p.mataAnggaran}</td>
+                                <td class="p-3 text-right font-semibold text-slate-600 align-middle">${formatIDR(p.alokasi)}</td>
+                                <td class="p-3 text-right font-bold text-slate-800 align-middle bg-slate-50/50">${formatIDR(sumPlans)}</td>
+                                <td class="p-3 text-center align-middle">${statusBadge}</td>
+                                <td class="p-3 text-center align-middle">
+                                    <button onclick="openTimelineModal('${p.id}')" class="bg-bni-teal hover:bg-cyan-800 text-white font-bold py-1 px-2.5 rounded text-[11px] inline-flex items-center gap-1 shadow-sm transition">
+                                        <i data-lucide="calendar-range" class="w-3 h-3"></i> Rencana Bulanan
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tbodyDetail.insertAdjacentHTML('beforeend', rowProjectHtml);
+                    });
+                }
+            });
+
+            if (tbodyDetail.children.length === 0) {
+                tbodyDetail.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-medium">Tidak ada rincian proyek ditemukan untuk kriteria filter saat ini.</td></tr>`;
+            }
+
+            lucide.createIcons();
+            renderTimelineSummaryOnly();
+        }
+
+        // PERBAIKAN TOTAL SINKRONISASI 100% TANPA SELISIH & FIX ACCORDION GRAND TOTAL
+        function renderTimelineSummaryOnly() {
+            const tbodySummary = document.getElementById('tbody-timeline-summary');
+            const filterWilayahEl = document.getElementById('filter-timeline-wilayah');
+            const filterMataGlobal = document.getElementById('global-mata-anggaran') ? document.getElementById('global-mata-anggaran').value : 'ALL';
+            
+            if(!tbodySummary || !filterWilayahEl) return;
+
+            const targetWilayah = filterWilayahEl.value;
+            
+            let summaryMap = {};        
+            let monthlyNominalMap = {}; 
+            let capexAlokasiMap = {};   
+
+            mataAnggaranList.forEach(m => { 
+                summaryMap[m] = [0, 0, 0, 0];
+                monthlyNominalMap[m] = Array(12).fill(0);
+                capexAlokasiMap[m] = 0;
+            });
+
+            // 1. Ambil basis alokasi murni terintegrasi dari dashboard (appData.alokasi) untuk menyelaraskan angka totalan
+            wilayahList.forEach(w => {
+                if (targetWilayah === "ALL" || w.trim() === targetWilayah.trim()) {
+                    mataAnggaranList.forEach(m => {
+                        const key = `${w}__${m}`;
+                        capexAlokasiMap[m] += (Number(appData.alokasi[key]) || 0);
+                    });
+                }
+            });
+
+            // 2. Akumulasikan sebaran target bulanan proyek
+            if (appData.rawProjects && appData.rawProjects.length > 0) {
+                appData.rawProjects.forEach(p => {
+                    let matchWil = false;
+                    if (targetWilayah === "ALL") {
+                        matchWil = true; 
+                    } else if (p.wilayah) {
+                        matchWil = (p.wilayah.trim() === targetWilayah.trim());
+                    }
+                    
+                    if (matchWil) {
+                        let namaMata = p.mataAnggaran ? p.mataAnggaran.trim() : '';
+                        if (mataAnggaranList.includes(namaMata)) {
+                            const plans = appData.monthlyPlans[p.id] || Array(12).fill(0);
+                            
+                            for(let m=0; m<12; m++) {
+                                monthlyNominalMap[namaMata][m] += (Number(plans[m]) || 0);
+                            }
+
+                            summaryMap[namaMata][0] += (Number(plans[0]) || 0) + (Number(plans[1]) || 0) + (Number(plans[2]) || 0);
+                            summaryMap[namaMata][1] += (Number(plans[3]) || 0) + (Number(plans[4]) || 0) + (Number(plans[5]) || 0);
+                            summaryMap[namaMata][2] += (Number(plans[6]) || 0) + (Number(plans[7]) || 0) + (Number(plans[8]) || 0);
+                            summaryMap[namaMata][3] += (Number(plans[9]) || 0) + (Number(plans[10]) || 0) + (Number(plans[11]) || 0);
+                        }
+                    }
                 });
+            }
+
+            let summaryHtml = "";
+            let grandTotalsQ = [0, 0, 0, 0];
+            let grandMonthlyNominal = Array(12).fill(0);
+            let grandAlokasiSektor = 0;
+
+            mataAnggaranList.forEach((m, idx) => {
+                const q = summaryMap[m];
+                const mNominal = monthlyNominalMap[m];
+                const totalRencanaRow = q[0] + q[1] + q[2] + q[3];
+                const totalAlokasiRow = capexAlokasiMap[m];
+
+                let monthlyPct = [];
+                for(let i=0; i<12; i++) {
+                    let pVal = totalAlokasiRow > 0 ? parseFloat(((mNominal[i] / totalAlokasiRow) * 100).toFixed(2)) : 0;
+                    monthlyPct.push(pVal);
+                }
+
+                const q1PctVal = monthlyPct[0] + monthlyPct[1] + monthlyPct[2];
+                const q2PctVal = monthlyPct[3] + monthlyPct[4] + monthlyPct[5];
+                const q3PctVal = monthlyPct[6] + monthlyPct[7] + monthlyPct[8];
+                const q4PctVal = monthlyPct[9] + monthlyPct[10] + monthlyPct[11];
+
+                const q1Pct = q1PctVal > 0 ? q1PctVal.toFixed(2) + "%" : "0.00%";
+                const q2Pct = q2PctVal > 0 ? q2PctVal.toFixed(2) + "%" : "0.00%";
+                const q3Pct = q3PctVal > 0 ? q3PctVal.toFixed(2) + "%" : "0.00%";
+                const q4Pct = q4PctVal > 0 ? q4PctVal.toFixed(2) + "%" : "0.00%";
+
+                let rasioPctText = "0.00%";
+                if (totalAlokasiRow > 0) {
+                    rasioPctText = ((totalRencanaRow / totalAlokasiRow) * 100).toFixed(2) + "%";
+                }
+
+                const isRowFiltered = (filterMataGlobal === 'ALL' || filterMataGlobal === m);
+                const rowBgStyle = isRowFiltered ? "cursor-pointer hover:bg-slate-50" : "opacity-40 bg-slate-50/50 pointer-events-none";
+
+                grandTotalsQ[0] += q[0]; grandTotalsQ[1] += q[1]; grandTotalsQ[2] += q[2]; grandTotalsQ[3] += q[3];
+                grandAlokasiSektor += totalAlokasiRow;
+                
+                for(let month=0; month<12; month++) {
+                    grandMonthlyNominal[month] += mNominal[month];
+                }
+
+                const rowId = `summary-row-detail-${idx}`;
+
+                summaryHtml += `
+                    <tr class="transition border-b border-slate-200 text-slate-700 ${rowBgStyle}" onclick="const el=document.getElementById('${rowId}'); el.classList.toggle('hidden');">
+                        <td class="p-3 font-bold pl-4 flex items-center justify-between gap-2">
+                            <span class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full ${m === 'Tanah' ? 'bg-orange-400' : m === 'Bangunan' ? 'bg-teal-600' : m === 'Kendaraan' ? 'bg-sky-400' : 'bg-cyan-600'}"></span>
+                                ${m}
+                            </span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                        </td>
+                        <td class="p-3 text-right font-bold bg-slate-100/20 text-slate-700">${formatIDR(totalAlokasiRow)}</td>
+                        <td class="p-3 text-right bg-cyan-50/10 text-slate-800 font-semibold">
+                            <div>${formatIDR(q[0])}</div>
+                            <div class="text-[10px] text-cyan-600 font-bold font-mono">${q1Pct}</div>
+                        </td>
+                        <td class="p-3 text-right bg-emerald-50/10 text-slate-800 font-semibold">
+                            <div>${formatIDR(q[1])}</div>
+                            <div class="text-[10px] text-emerald-600 font-bold font-mono">${q2Pct}</div>
+                        </td>
+                        <td class="p-3 text-right bg-amber-50/10 text-slate-800 font-semibold">
+                            <div>${formatIDR(q[2])}</div>
+                            <div class="text-[10px] text-amber-600 font-bold font-mono">${q3Pct}</div>
+                        </td>
+                        <td class="p-3 text-right bg-purple-50/10 text-slate-800 font-semibold">
+                            <div>${formatIDR(q[3])}</div>
+                            <div class="text-[10px] text-purple-600 font-bold font-mono">${q4Pct}</div>
+                        </td>
+                        <td class="p-3 text-right font-black text-bni-teal bg-slate-50/60">${formatIDR(totalRencanaRow)}</td>
+                        <td class="p-3 text-center font-bold bg-teal-50/30 text-teal-800">${rasioPctText}</td>
+                    </tr>
+                    
+                    <tr id="${rowId}" class="bg-slate-50/80 hidden border-b border-slate-200">
+                        <td colspan="8" class="p-3 pl-8">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Breakdown Kontribusi Rencana Bulanan terhadap Alokasi Pos:</div>
+                            <div class="grid grid-cols-4 md:grid-cols-12 gap-2 text-center text-xs font-medium text-slate-600">
+                                ${Array.from({length: 12}).map((_, mIdx) => {
+                                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                                    const mPctVal = totalAlokasiRow > 0 ? ((mNominal[mIdx] / totalAlokasiRow) * 100).toFixed(2) : "0.00";
+                                    return `
+                                        <div class="bg-white p-1.5 rounded border border-slate-100 shadow-2xs">
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase">${monthNames[mIdx]}</div>
+                                            <div class="font-bold text-slate-700">${formatIDR(mNominal[mIdx])}</div>
+                                            <div class="text-[9px] font-mono text-bni-teal font-black">${mPctVal}%</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const absoluteGrandTotalRencana = grandTotalsQ[0] + grandTotalsQ[1] + grandTotalsQ[2] + grandTotalsQ[3];
+            
+            let grandMonthlyPct = [];
+            for(let i=0; i<12; i++) {
+                let pVal = grandAlokasiSektor > 0 ? parseFloat(((grandMonthlyNominal[i] / grandAlokasiSektor) * 100).toFixed(2)) : 0;
+                grandMonthlyPct.push(pVal);
+            }
+            const gQ1PctVal = grandMonthlyPct[0] + grandMonthlyPct[1] + grandMonthlyPct[2];
+            const gQ2PctVal = grandMonthlyPct[3] + grandMonthlyPct[4] + grandMonthlyPct[5];
+            const gQ3PctVal = grandMonthlyPct[6] + grandMonthlyPct[7] + grandMonthlyPct[8];
+            const gQ4PctVal = grandMonthlyPct[9] + grandMonthlyPct[10] + grandMonthlyPct[11];
+
+            const gQ1Pct = gQ1PctVal > 0 ? gQ1PctVal.toFixed(2) + "%" : "0.00%";
+            const gQ2Pct = gQ2PctVal > 0 ? gQ2PctVal.toFixed(2) + "%" : "0.00%";
+            const gQ3Pct = gQ3PctVal > 0 ? gQ3PctVal.toFixed(2) + "%" : "0.00%";
+            const gQ4Pct = gQ4PctVal > 0 ? gQ4PctVal.toFixed(2) + "%" : "0.00%";
+
+            let grandRasioPctText = "0.00%";
+            if (grandAlokasiSektor > 0) {
+                grandRasioPctText = ((absoluteGrandTotalRencana / grandAlokasiSektor) * 100).toFixed(2) + "%";
+            }
+
+            const grandRowId = "summary-row-detail-grandtotal";
+
+            // IMPLEMENTASI DRAWER CLICK: Memperbaiki fungsi accordion baris penutup Grand Total
+            summaryHtml += `
+                <tr class="bg-slate-200 font-black border-t-2 border-slate-400 text-slate-800 shadow-sm cursor-pointer hover:bg-slate-300/80" onclick="const el=document.getElementById('${grandRowId}'); el.classList.toggle('hidden');">
+                    <td class="p-3 uppercase text-[11px] pl-4 tracking-wider font-bold flex items-center justify-between">
+                        <span>GRAND TOTAL MONITORING</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-600"></i>
+                    </td>
+                    <td class="p-3 text-right text-slate-900 font-extrabold bg-slate-300/40">${formatIDR(grandAlokasiSektor)}</td>
+                    <td class="p-3 text-right text-cyan-900 font-extrabold bg-cyan-100/30">
+                        <div>${formatIDR(grandTotalsQ[0])}</div>
+                        <div class="text-[10px] text-cyan-700 font-black font-mono">${gQ1Pct}</div>
+                    </td>
+                    <td class="p-3 text-right text-emerald-900 font-extrabold bg-emerald-100/30">
+                        <div>${formatIDR(grandTotalsQ[1])}</div>
+                        <div class="text-[10px] text-emerald-700 font-black font-mono">${gQ2Pct}</div>
+                    </td>
+                    <td class="p-3 text-right text-amber-900 font-extrabold bg-amber-100/30">
+                        <div>${formatIDR(grandTotalsQ[2])}</div>
+                        <div class="text-[10px] text-amber-700 font-black font-mono">${gQ3Pct}</div>
+                    </td>
+                    <td class="p-3 text-right text-purple-900 font-extrabold bg-purple-100/30">
+                        <div>${formatIDR(grandTotalsQ[3])}</div>
+                        <div class="text-[10px] text-purple-700 font-black font-mono">${gQ4Pct}</div>
+                    </td>
+                    <td class="p-3 text-right text-bni-teal text-sm font-black bg-slate-300/60">${formatIDR(absoluteGrandTotalRencana)}</td>
+                    <td class="p-3 text-center text-teal-950 font-black bg-teal-100/60 shadow-inner">${grandRasioPctText}</td>
+                </tr>
+
+                <tr id="${grandRowId}" class="bg-slate-300/40 hidden border-b border-slate-300">
+                    <td colspan="8" class="p-3 pl-8">
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Grand Total Kontribusi Akumulasi Bulanan Seluruh Sektor:</div>
+                        <div class="grid grid-cols-4 md:grid-cols-12 gap-2 text-center text-xs font-medium text-slate-700">
+                            ${Array.from({length: 12}).map((_, mIdx) => {
+                                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                                const gPctVal = grandAlokasiSektor > 0 ? ((grandMonthlyNominal[mIdx] / grandAlokasiSektor) * 100).toFixed(2) : "0.00";
+                                return `
+                                    <div class="bg-white p-1.5 rounded border border-slate-300/60 shadow-2xs">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase">${monthNames[mIdx]}</div>
+                                        <div class="font-bold text-slate-800">${formatIDR(grandMonthlyNominal[mIdx])}</div>
+                                        <div class="text-[9px] font-mono text-emerald-700 font-black">${gPctVal}%</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </td>
+                </tr>
+            `;
+            
+            tbodySummary.innerHTML = summaryHtml;
+            lucide.createIcons();
+        }
+
+        function openTimelineModal(projectId) {
+            const p = appData.rawProjects.find(item => item.id === projectId);
+            if(!p) return;
+
+            selectedTimelineProjectId = projectId;
+
+            document.getElementById('mt-info-id').innerText = p.id;
+            document.getElementById('mt-info-nama').innerText = p.nama;
+            document.getElementById('mt-info-mata').innerText = p.mataAnggaran;
+            document.getElementById('mt-info-alokasi').innerText = formatIDR(p.alokasi);
+
+            const currentPlans = appData.monthlyPlans[projectId] || Array(12).fill(0);
+            for(let m = 0; m < 12; m++) {
+                document.getElementById(`mt-input-${m}`).value = currentPlans[m];
+            }
+
+            recalculateModalQuarters();
+
+            const modal = document.getElementById('modal-timeline-plan');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeTimelineModal() {
+            document.getElementById('modal-timeline-plan').classList.add('hidden');
+            selectedTimelineProjectId = null;
+        }
+
+        function recalculateModalQuarters() {
+            let tempPlans = [];
+            for(let m = 0; m < 12; m++) {
+                let val = parseFloat(document.getElementById(`mt-input-${m}`).value);
+                if (isNaN(val) || val < 0) val = 0;
+                tempPlans.push(val);
+            }
+
+            const q1 = tempPlans[0] + tempPlans[1] + tempPlans[2];
+            const q2 = tempPlans[3] + tempPlans[4] + tempPlans[5];
+            const q3 = tempPlans[6] + tempPlans[7] + tempPlans[8];
+            const q4 = tempPlans[9] + tempPlans[10] + tempPlans[11];
+            const grandTotal = q1 + q2 + q3 + q4;
+
+            document.getElementById('mt-label-q1').innerText = "Rp " + Math.round(q1/1000000).toLocaleString('id-ID') + " M";
+            document.getElementById('mt-label-q2').innerText = "Rp " + Math.round(q2/1000000).toLocaleString('id-ID') + " M";
+            document.getElementById('mt-label-q3').innerText = "Rp " + Math.round(q3/1000000).toLocaleString('id-ID') + " M";
+            document.getElementById('mt-label-q4').innerText = "Rp " + Math.round(q4/1000000).toLocaleString('id-ID') + " M";
+            
+            document.getElementById('mt-label-grand-total').innerText = formatIDR(grandTotal);
+
+            const p = appData.rawProjects.find(item => item.id === selectedTimelineProjectId);
+            const totalLabelContainer = document.getElementById('mt-label-grand-total');
+            if (p && grandTotal > p.alokasi) {
+                totalLabelContainer.className = "text-rose-600 text-base font-black animate-pulse";
+            } else {
+                totalLabelContainer.className = "text-emerald-700 text-base font-black";
+            }
+        }
+
+        async function submitTimelineModalUpdate() {
+            if(!selectedTimelineProjectId) return;
+
+            const btnSubmit = document.getElementById('modal-timeline-btn-submit');
+            let finalPlans = [];
+            for(let m = 0; m < 12; m++) {
+                let val = parseFloat(document.getElementById(`mt-input-${m}`).value);
+                if (isNaN(val) || val < 0) val = 0;
+                finalPlans.push(val);
+            }
+
+            const totalSum = finalPlans.reduce((a, b) => a + b, 0);
+            const p = appData.rawProjects.find(item => item.id === selectedTimelineProjectId);
+            
+            if(p && totalSum > p.alokasi) {
+                if(!confirm(`Atensi Over Plafon: Total target komitmen bulanan melebihi batas anggaran CAPEX resmi. Tetap simpan?`)) {
+                    return;
+                }
+            }
+
+            const originalText = btnSubmit.innerHTML;
+            btnSubmit.disabled = true;
+            btnSubmit.className = "px-5 py-2 bg-slate-400 text-white font-bold rounded-lg text-xs cursor-not-allowed";
+            btnSubmit.innerText = "Menyimpan ke Sheets...";
+            
+            try {
+                await fetch('https://script.google.com/macros/s/AKfycbyqyvXh2jclWVZE4STJ8G0c_M8agRnR8lk-WS1zCwXRkhQ6lthOjv_9VgA0QgIMkRn1nA/exec', {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: "TIMELINE_UPDATE",
+                        id: selectedTimelineProjectId,
+                        monthlyPlans: finalPlans
+                    })
+                });
+
+                appData.monthlyPlans[selectedTimelineProjectId] = finalPlans;
+                
+                showToast(`Komitmen rencana bulanan untuk ${selectedTimelineProjectId} sukses disimpan ke database Sheets!`);
+                closeTimelineModal();
+                renderTimelineView(); 
+
+            } catch (error) {
+                console.error("Detail Error Browser:", error);
+                alert("Terjadi kendala jaringan fisik API, gagal menghubungi spreadsheet.");
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.className = "px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-sm transition";
+                btnSubmit.innerHTML = originalText;
             }
         }
 
@@ -1092,6 +1692,7 @@
             const fillFilter = document.getElementById('select-filter-wilayah');
             const fW = document.getElementById('switch-from-wilayah');
             const tW = document.getElementById('switch-to-wilayah');
+            const filterTimelineW = document.getElementById('filter-timeline-wilayah');
 
             if(fillFilter) {
                 fillFilter.innerHTML = `<option value="ALL">-- SEMUA WILAYAH GABUNGAN --</option>`;
@@ -1107,6 +1708,14 @@
                 });
             }
 
+            if(filterTimelineW) {
+                filterTimelineW.innerHTML = `<option value="ALL">-- Semua Kantor Wilayah --</option>`;
+                wilayahList.forEach(w => {
+                    filterTimelineW.innerHTML += `<option value="${w}">${w}</option>`;
+                });
+            }
+
+            updateSortIcons();
             fetchExternalData();
             lucide.createIcons();
         };
